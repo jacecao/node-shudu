@@ -1,0 +1,26 @@
+{
+  "name": "shudu",
+  "version": "1.0.0",
+  "description": "make a game by node and koa",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "shudu"
+  ],
+  "author": "jacecao",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.18.13",
+    "browser-sync-ui": "^0.6.3",
+    "gulp": "^3.9.1",
+    "gulp-sass": "^3.1.0"
+  },
+  "dependencies": {
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
+    "koa-views": "^6.1.2",
+    "nunjucks": "^3.0.1"
+  }
+}
