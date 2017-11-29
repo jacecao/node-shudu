@@ -5,14 +5,21 @@ const nodemon = require('gulp-nodemon');
 const browserSync = require('./browsersync');
 const src = require('./files');
 
-gulp.task('server', ['sass'], function () {
+gulp.task('server', ['sass', 'script_core'], function () {
     let started = false;
     return nodemon({
         // 指定服务启动文件
         script: src.server,
         // 指定不需要监听的文件
         // 这些文件发生变动不需要重启服务
-        ignore: ['gulpfile.js', 'node_modules/', 'tasks/', src.html, src.css]
+        ignore: [
+            'gulpfile.js', 
+            'node_modules/',
+            'tasks/', 
+            src.html, 
+            src.css,
+            src.js
+        ]    
     }).on('start', function () {
         if (!started) {
             // 初始化浏览器自动刷新
@@ -27,8 +34,9 @@ gulp.task('server', ['sass'], function () {
                 // 这些文件发生变化就会刷新
                 // 这里为什么不对css,js文件监听呢
                 // 因为这些监听都写在各自的任务里了，不需要在单独添加
-                files: src.html,
+                files: [src.html],
                 logLevel: 'info',
+                notify: false,
                 reloadDelay: 500
             }); 
             started = true;
