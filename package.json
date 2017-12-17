@@ -4,7 +4,8 @@
   "description": "make a game by node and koa",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp default"
   },
   "keywords": [
     "shudu"

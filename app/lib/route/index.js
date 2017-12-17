@@ -1,7 +1,5 @@
 async function index (ctx) {
-	await ctx.render('index', {
-		name: 'koa2;'
-	});
+	await ctx.render('index', {});
 }
 
 module.exports = index;
