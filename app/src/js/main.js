@@ -4003,7 +4003,14 @@ var view = new _render2.default({
 	data: _data2.default.makeMatrix()
 });
 
+// 初始化主视图
 view.init();
+
+// 窗口重置监听
+window.addEventListener('resize', function () {
+	// 执行视图尺寸重置，保证为一个正方形结构
+	view.resize();
+}, false);
 
 /***/ }),
 /* 126 */
@@ -9608,6 +9615,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 // 文档结构渲染
@@ -9617,6 +9626,8 @@ var render = function () {
 
 		this.container = obj.container;
 		this.data = obj.data;
+		this.render = false;
+		this.table = null;
 	}
 
 	// 创建HTML结构
@@ -9625,8 +9636,12 @@ var render = function () {
 	_createClass(render, [{
 		key: 'bulidHTML',
 		value: function bulidHTML(data) {
+			// 生成一个随机的class
+			var _class = 'shudu-' + Date.now();
+			this.table = '.' + _class;
+
 			// array 为一个 9 * 9 的二维数组
-			var html = '<table class="table is-bordered is-fullwidth"><tbody>';
+			var html = '<table class="' + _class + ' table is-bordered is-fullwidth"><tbody>';
 
 			for (var i = 1; i <= data.length; i++) {
 				// 第一纬数组遍历
@@ -9666,8 +9681,31 @@ var render = function () {
 			if (container) {
 				var html = this.bulidHTML(data);
 				container.innerHTML = html;
+				this.render = true;
 			} else {
 				console.error('the ' + ele + ' undefind, please check the element is exist');
+			}
+		}
+
+		// 保证为一个正方形结构
+
+	}, {
+		key: 'resize',
+		value: function resize() {
+			if (this.render) {
+				var ele = this.table + ' td';
+				var cell = document.querySelector(ele);
+				// 因为宽度是固定的，所以参考每格的宽度，来确定gap度
+				// 保证每格都是正方形结构
+				var width = window.getComputedStyle(cell).getPropertyValue('width');
+				// 通过扩展运算符将 HTML片段 转换为数组
+				var ele_arr = [].concat(_toConsumableArray(document.querySelectorAll(ele)));
+				// console.log(ele_arr instanceof Array);
+				ele_arr.forEach(function (ele, index) {
+					ele.style.height = width;
+				});
+			} else {
+				console.info('请在使用init()方法或renderHTML()方法后执行');
 			}
 		}
 
@@ -9681,6 +9719,7 @@ var render = function () {
 			var ele = this.container;
 			var data = this.data;
 			this.renderHTML(ele, data);
+			this.resize();
 		}
 	}]);
 

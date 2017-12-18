@@ -4,12 +4,18 @@ export default class render {
 	constructor (obj) {
 		this.container = obj.container;
 		this.data = obj.data;
+		this.render = false;
+		this.table = null;
 	}
 
 	// 创建HTML结构
 	bulidHTML (data) {
+		// 生成一个随机的class
+		const _class = 'shudu-' + Date.now();
+		this.table = '.' + _class;
+
 		// array 为一个 9 * 9 的二维数组
-		let html = '<table class="table is-bordered is-fullwidth"><tbody>';
+		let html = `<table class="${_class} table is-bordered is-fullwidth"><tbody>`;
 		
 		for (let i = 1; i <= data.length; i++) {
 			// 第一纬数组遍历
@@ -50,8 +56,28 @@ export default class render {
 		if (container) {
 			const html = this.bulidHTML(data);
 			container.innerHTML = html;
+			this.render = true;
 		}else{
 			console.error(`the ${ele} undefind, please check the element is exist`);
+		}
+	}
+
+	// 保证为一个正方形结构
+	resize () {
+		if (this.render) {
+			const ele = `${this.table} td`;
+			const cell = document.querySelector(ele);
+			// 因为宽度是固定的，所以参考每格的宽度，来确定gap度
+			// 保证每格都是正方形结构
+			const width = window.getComputedStyle(cell).getPropertyValue('width');
+			// 通过扩展运算符将 HTML片段 转换为数组
+			const ele_arr = [...document.querySelectorAll(ele)];
+			// console.log(ele_arr instanceof Array);
+			ele_arr.forEach((ele, index) => {
+				ele.style.height = width;
+			});
+		} else {
+			console.info('请在使用init()方法或renderHTML()方法后执行');
 		}
 	}
 
@@ -62,6 +88,7 @@ export default class render {
 		let ele = this.container;
 		let data = this.data;
 		this.renderHTML(ele, data);
+		this.resize();
 	}
 
 }
