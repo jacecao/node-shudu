@@ -1,4 +1,57 @@
+/* 请先引入 bulma CSS框架 */
 html {
 	font-size: 62.5%;
 	color: #222;
+}
+
+h1.title {
+	padding: 1rem;
+	background-color: #00d1b2;
+	color: #fff;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	user-select: none;
+	max-width: 450px;
+	>* {
+		max-width: 450px;
+	}
+}
+
+.container {
+	width: 90%;
+	margin-top: 4rem;
+	box-shadow: 0 0 0.5rem rgba(22,22,22,0.4);
+
+	td {
+		text-align: center;
+	}
+	
+	td.border-right {
+		border-right-width: 0.2rem;
+		border-right-color: #01d1d1;
+	}
+
+	tr.border-bottom{
+		border-bottom-style: solid;
+		border-bottom-width: 0.2rem;
+		border-bottom-color: #01d1d1;
+	}
+}
+
+
+.dashboard {
+	position: absolute;
+	bottom: 2rem;
+	left: 0;
+	width: 100%;
+	.buttons {
+		justify-content: center;
+		.button {
+			width: 20%;
+			height: 3rem;
+		}
+	}
 }

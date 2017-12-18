@@ -1,4 +1,4 @@
-module.exports = {
+export default {
 	
 	//生成一个二维数组
 	makeRow(v = 0) {

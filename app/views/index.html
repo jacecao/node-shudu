@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, inital-scale=1,user-scalable=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
 	<title>数独游戏</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
 	<link rel="stylesheet" href="css/main.css">
 </head>
 <body>
@@ -11,11 +12,18 @@
 		<h1 class="title">数独游戏</h1>
 	</header>
 
-	<section id="container" class="container">
-		
-	</section>
-
+	<section id="container" class="container"></section>
+	
 	<section class="grid"></section>
+
+	<footer id="dashboard" class="dashboard">
+			<div class="buttons">
+				<button type="button" class="button is-primary" id="check">检查</button>
+				<button type="button" class="button is-primary" id="reset">重置</button>
+				<button type="button" class="button is-primary" id="clear">清理</button>
+				<button type="button" class="button is-primary" id="rebuild">重建</button>
+			</div>
+	</footer>
 
 	<script src="js/main.js"></script>
 </body>

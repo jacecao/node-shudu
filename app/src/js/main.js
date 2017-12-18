@@ -3988,13 +3988,22 @@ module.exports = __webpack_require__(125);
 
 __webpack_require__(126);
 
-var _test = __webpack_require__(329);
+var _render = __webpack_require__(329);
 
-var _test2 = _interopRequireDefault(_test);
+var _render2 = _interopRequireDefault(_render);
+
+var _data = __webpack_require__(330);
+
+var _data2 = _interopRequireDefault(_data);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-console.log(_test2.default.name);
+var view = new _render2.default({
+	container: '#container',
+	data: _data2.default.makeMatrix()
+});
+
+view.init();
 
 /***/ }),
 /* 126 */
@@ -9593,15 +9602,92 @@ module.exports = function (regExp, replace) {
 "use strict";
 
 
-// export default {name: 'test'}
-var dataTool = __webpack_require__(330);
-
-var a = Array.from({ length: 9 }, function (v, i) {
-  return i;
+Object.defineProperty(exports, "__esModule", {
+	value: true
 });
-console.log(a);
-dataTool.shuffle(a);
-console.log(a);
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// 文档结构渲染
+var render = function () {
+	function render(obj) {
+		_classCallCheck(this, render);
+
+		this.container = obj.container;
+		this.data = obj.data;
+	}
+
+	// 创建HTML结构
+
+
+	_createClass(render, [{
+		key: 'bulidHTML',
+		value: function bulidHTML(data) {
+			// array 为一个 9 * 9 的二维数组
+			var html = '<table class="table is-bordered is-fullwidth"><tbody>';
+
+			for (var i = 1; i <= data.length; i++) {
+				// 第一纬数组遍历
+				// 构建每一行起始结构
+				if (i % 9 == 1) {
+					html += '<tr>';
+				}
+				if (i % 9 == 3 || i % 9 == 6) {
+					html += '<tr class="border-bottom">';
+				}
+				// 构建该行的单元格
+				// 第二维遍历
+				for (var j = 1; j <= data[i - 1].length; j++) {
+					if (j % 9 == 3 || j % 9 == 6) {
+						html += '<td class="border-right" data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + data[i - 1][j - 1] + '</td>';
+					} else {
+						html += '<td data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + data[i - 1][j - 1] + '</td>';
+					}
+					// 加入每行的闭合标签
+					if (j % 9 == 0) {
+						html += '</tr>';
+					}
+				}
+			}
+			// 加入闭合标签
+			html += "</tbody>" + "</table>";
+			// 返回HTML结构
+			return html;
+		}
+
+		// 渲染HTML结构
+
+	}, {
+		key: 'renderHTML',
+		value: function renderHTML(ele, data) {
+			var container = document.querySelector(ele);
+			if (container) {
+				var html = this.bulidHTML(data);
+				container.innerHTML = html;
+			} else {
+				console.error('the ' + ele + ' undefind, please check the element is exist');
+			}
+		}
+
+		// 初始化模块
+		// 	container: html容器（css选择符号）
+		// 	data: arrray (9*9) 九宫格二维数组
+
+	}, {
+		key: 'init',
+		value: function init() {
+			var ele = this.container;
+			var data = this.data;
+			this.renderHTML(ele, data);
+		}
+	}]);
+
+	return render;
+}();
+
+exports.default = render;
 
 /***/ }),
 /* 330 */
@@ -9610,7 +9696,10 @@ console.log(a);
 "use strict";
 
 
-module.exports = {
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = {
 
 	//生成一个二维数组
 	makeRow: function makeRow() {
