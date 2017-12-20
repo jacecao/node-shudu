@@ -5,5 +5,6 @@ module.exports = {
     js: 'app/src/js/',
     html: 'app/views/*.html',
     server: 'app/app.js',
-    lib: 'app/lib/**/*.js'
+    lib: 'app/lib/**/*.js',
+    test: 'test/'
 }

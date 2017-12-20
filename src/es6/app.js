@@ -1,6 +1,6 @@
 import 'babel-polyfill';
-import Render from "./lib/render.js";
-import data from './lib/data.js';
+import Render from "./ui/render.js";
+import data from './lib/matrix.js';
 
 const view = new Render({
 	container: '#container',

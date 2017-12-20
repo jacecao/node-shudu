@@ -1,5 +1,5 @@
-// 文档结构渲染
-export default class render {
+// 九宫格文档结构渲染
+export default class Render {
 	
 	constructor (obj) {
 		this.container = obj.container;

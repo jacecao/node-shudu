@@ -40,3 +40,32 @@ gulp.task('script_core', function () {
     .pipe(browserSync.reload({ stream: true }));
 
 });
+
+
+// 测试任务
+gulp.task('test', function () {
+  return gulp.src('src/es6/test.js')
+    .pipe(plumber())
+    .pipe(named())
+    // 编译js
+    .pipe(gulpwebpack({
+      module: {
+        loaders: [{
+          test: /\.js$/,
+          loader: 'babel-loader',
+        }]
+      },
+      devtool: 'souce-map'
+    }))
+    .pipe(sourcemaps.init({loadMaps: true}))
+    // 对文件重命名(其实就是复制一份文件并重命名)
+    .pipe(rename({
+      basename: 'test',
+      extname: '.js'
+    }))
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest(src.test))
+    // 刷新浏览器
+    .pipe(browserSync.reload({ stream: true }));
+
+});
