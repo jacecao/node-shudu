@@ -30,7 +30,7 @@ export default {
 	// row_index 第一维数组的索引
 	// col_index 第二维数组中的所有
 	convertPosition (row_index, col_index) {
-		// box_position 用于储存九宫格中宫的坐标
+		// box_x/y 用于储存九宫格中宫的坐标
 		const box_x = Math.floor(col_index / 3);
 		const box_y = Math.floor(row_index / 3);
 		// 根据上面的宫坐标，接下来，我们需要确定宫中格子的坐标
@@ -65,6 +65,41 @@ export default {
 		// 这里返回的是一个对象
 		// 该对象为 ’当前索引指向的值‘ 所在的’宫‘中第一个元素在9 * 9 二维数组中的 ’索引‘
 		return {rowIndex: cell_y, colIndex: cell_x};
+	},
+
+	// 根据宫的索引值来获取宫的首个元素的索引值
+	// box_index 为宫的索引值
+	/*  0  1  2 | 3  4 5| 6 7 8
+	**  1 ( 0 ) | ( 1 ) | ( 2 )
+	*   2       |       |
+	*   ........................
+	*   3 ( 3 ) | ( 4 ) | ( 5 )
+	*   4       |       |
+	*   5       |       |
+	*   ........................
+	*   6 ( 6 ) | ( 7 ) | ( 8 )
+	*   7       |       |
+	*   8       |       | 
+	 */
+	convertBox (box_index = 0) {
+		let first_cell_col = (box_index % 3) * 3;
+		let first_cell_row = Math.floor(box_index / 3) * 3;
+		return {
+			rowIndex: first_cell_row, 
+			colIndex: first_cell_col
+		};
+	},
+
+	// 获取二维数组中指定列的数值
+	// matrix 二维数组
+	// colIndex 指定的列
+	getCol (matrix, colIndex) {
+		// 保存列中的数值
+		let arr = [];
+		for (let i = 0; i < 9; i++) {
+			arr.push(matrix[i][colIndex]);
+		};
+		return arr;
 	},
 	/*
 	** Fisher-Yates 费雪耶兹随机置乱算法

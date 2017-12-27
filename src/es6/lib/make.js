@@ -2,32 +2,50 @@
 import matrix from "./matrix.js";
 // 计算工具
 import tool from "./tool.js";
-
+// 检查工具
+import checker from "./checker.js";
 // 生成数独，（随机计算出所有的格子应该填写的数字）
-class Make {
-	// array = 9 * 9 二维数组
-	constructor (array) {
-		this.matrix = matrix.makeMatrix();
+export default class Make {
+
+	constructor () {
+		// 九宫格二维数组
+		this.matrix = null;
+		// 9 * 9 索引数组表
+		this.orders = null;
+		// 是否执行成功
+		this._isSuccess = false;
 	}
 
-	_gennerator () {
+	init () {
+		while (!this._generator()) {
+			console.log('do it');
+		}
+	}
+
+	_generator () {
+		// 生成9 * 9 二维数组
+		// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
+		// 及实现清空操作，理解这一点也非常重要
+		this.matrix = matrix.makeMatrix();
 		// 建立随机索引数组
 		// 其实这里可以理解为是matri的索引表
-		// 这个索引只是被打乱了，使得后面能吃matrix中得到一个随机值
+		// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
 		this.orders = matrix.makeMatrix()
-			.map( row => row.amp( (v, i) => i ) )
+			.map( row => row.map( (v, i) => i ) )
 			.map( row => tool.shuffle(row) );
-
 
 		// 填入 1 - 9 
 		for (let n = 1; n <= 9; n++) {
-			this._fillNumber(n);
+			if (!this._fillNumber(n)) {
+				return false;
+			}
 		}
+		return true;
 	}
 
 	_fillNumber (n) {
 		// 从第一行开始填写数字
-		this._fillRow(n, 0);
+		return this._fillRow(n, 0);
 	}
 
 	_fillRow (n, row_index) {
@@ -44,6 +62,9 @@ class Make {
 		// 需要注意的是，这里的原始数组，是通过matrix类生成的
 		// 默认所有的值都为 0 ；
 		const row = this.matrix[row_index];
+
+		// 获取该行的中各元素的随机索引值，
+		// 后面将根据该索引值取值 
 		const orders = this.orders[row_index];
 
 
@@ -55,13 +76,12 @@ class Make {
 			if (row[col_index] != 0) {
 				continue;
 			}
-			// 检查这个位置在列和当前‘宫’中是否能填写
-			if (!checkFillable) {
+			// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
+			if (!checker.checkFillable(this.matrix, n, row_index, col_index)) {
 				continue;
 			} 
 
 			row[col_index] = n;
-
 			// 注意这里需要将递归写进循环体内
 			// 这样作的目的，是为了确保下一行能正确填写的情况下，
 			// 那么才能确定本次填写是足够正确的
@@ -72,10 +92,10 @@ class Make {
 				row[col_index] = 0;
 				continue;
 			}
-			// 填写成功
 			return true;
 		}
-		// 填写失败
+		// 该函数一直返回false
+		// 除非row_index = 8
 		return false;
 	}
 }

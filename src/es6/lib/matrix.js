@@ -29,8 +29,8 @@ export default {
 
 	// 获取九宫格数组
 	// matrix: 二维数组
-	// row_index: 第一维起始索引
-	// col_index: 第二维起始索引
+	// row_index: 宫内第一个元素的第一维起始索引
+	// col_index: 宫内第一个元素的第二维起始索引
 	// 取值方式如下所示：
 	// [（matri数组中的一部分）
 	// 	[a,b,c],  [0,1,2
@@ -39,8 +39,11 @@ export default {
 	// ]
 	// 通过该方法，以a元素的索引为起点，将a,b,c,1,2,3,o,p,q取出
 	// 注意这里返回的是一个长度为9的数组
-	box_matrix (matrix, row_index = 0, col_index = 0) {
+	boxMatrix (matrix, row_index = 0, col_index = 0) {
+		// 保存九宫格数组
 		let box_arr = [];
+		// 保存九宫格中每个值对应的索引
+		let box_index = [];
 		// 保存每列的起始位置
 		const _start_index = col_index;
 		// 保存将要取值目标的位置
@@ -55,13 +58,15 @@ export default {
 				_target_index = _start_index;
 			}
 			box_arr.push(matrix[row_index][_target_index]);
+			box_index.push({rowIndex: row_index, colIndex: _target_index});
 			_target_index += 1;
 		}
 		// 返回我们最终的取值
 		if (box_arr.length != 9) {
 			console.info('box_matrix was failed');
+			return null;
 		} else {
-			return box_arr;
+			return {boxValue: box_arr, boxValueIndex: box_index};
 		}
 	}
 }
