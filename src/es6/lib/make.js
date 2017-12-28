@@ -3,7 +3,7 @@ import matrix from "./matrix.js";
 // 计算工具
 import tool from "./tool.js";
 // 检查工具
-import checker from "./checker.js";
+import {checkerTool} from "./checker.js";
 // 生成数独，（随机计算出所有的格子应该填写的数字）
 export default class Make {
 
@@ -12,8 +12,6 @@ export default class Make {
 		this.matrix = null;
 		// 9 * 9 索引数组表
 		this.orders = null;
-		// 是否执行成功
-		this._isSuccess = false;
 	}
 
 	init () {
@@ -77,7 +75,7 @@ export default class Make {
 				continue;
 			}
 			// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
-			if (!checker.checkFillable(this.matrix, n, row_index, col_index)) {
+			if (!checkerTool.checkFillable(this.matrix, n, row_index, col_index)) {
 				continue;
 			} 
 

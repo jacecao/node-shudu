@@ -4,7 +4,7 @@ import tool from './lib/tool.js';
 
 import Make from './lib/make.js'
 
-import checker from './lib/checker.js';
+import {checkerTool} from './lib/checker.js';
 
 // 工具测试
 /*
@@ -31,12 +31,13 @@ console.log(maker.matrix);
 
 
 // checker test
+
 let arr = [1,2,3,4,5,8,9,7,6];
 console.log(arr);
-console.log(checker.checkArray(arr));
+console.log(checkerTool.checkArray(arr));
 let arr1 = [1,2,0,3,4,0,0,8,9];
 console.log(arr1);
-console.log(checker.checkArray(arr1));
-let arr2 = [1,1,2,0,0,3,4,5,6]
+console.log(checkerTool.checkArray(arr1));
+let arr2 = [1,1,2,0,0,3,4,5,3]
 console.log(arr2);
-console.log(checker.checkArray(arr2));
+console.log(checkerTool.checkArray(arr2));

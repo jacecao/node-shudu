@@ -320,6 +320,7 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.Checker = exports.checkerTool = undefined;
 
 var _tool = __webpack_require__(1);
 
@@ -331,8 +332,10 @@ var _matrix2 = _interopRequireDefault(_matrix);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// 检查对象
-exports.default = {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } // 检查对象
+
+
+var checkerTool = {
 
 	// 检查数值在九宫内填写合法
 	/* matrix 九宫二维数组
@@ -376,8 +379,18 @@ exports.default = {
 	},
 
 
-	// 数独-检查-标记
-	// array 一维数组
+	/*
+ ** 数独-检查-标记
+ ** array 一维数组
+ ** 这里我们使用的检查核心依然是一张表
+ ** 目前我们在制作数独游戏中已经有了2张数据表
+ ** 这两张数据表产生于make类
+ ** 1张是生成的数独二维数据表， 这张表将用于记录当前执行代码过程中生成的正确数独排序
+ ** 1张是生成上面的数独排序表时，我们所采用的随机序列表，通过该表来随机生成数独排序
+ ** 那么当前我们检查数组内的值是否符合数独游戏，那么需要生成一张新的表，用于记录用户
+ ** 填写的数据的正确和错误，这三张表都是一一对应的关系
+ ** checkArray就是用于组成这张表的
+ */
 	checkArray: function checkArray(array) {
 		var len = array.length;
 		// 创建检查标记数组
@@ -399,6 +412,8 @@ exports.default = {
 			}
 
 			for (var j = i + 1; j < len; j++) {
+				// 当数组中出现相等的值时
+				// 那么都标记为false
 				if (array[j] == v) {
 					marks[i] = marks[j] = false;
 				}
@@ -408,6 +423,13 @@ exports.default = {
 		return marks;
 	}
 };
+
+var Checker = function Checker() {
+	_classCallCheck(this, Checker);
+};
+
+exports.checkerTool = checkerTool;
+exports.Checker = Checker;
 
 /***/ }),
 /* 3 */
@@ -437,8 +459,6 @@ var _make2 = _interopRequireDefault(_make);
 
 var _checker = __webpack_require__(2);
 
-var _checker2 = _interopRequireDefault(_checker);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // 工具测试
@@ -464,16 +484,17 @@ console.log(maker.matrix);
 */
 
 // checker test
+
 // export default {name: 'test'}
 var arr = [1, 2, 3, 4, 5, 8, 9, 7, 6];
 console.log(arr);
-console.log(_checker2.default.checkArray(arr));
+console.log(_checker.checkerTool.checkArray(arr));
 var arr1 = [1, 2, 0, 3, 4, 0, 0, 8, 9];
 console.log(arr1);
-console.log(_checker2.default.checkArray(arr1));
-var arr2 = [1, 1, 2, 0, 0, 3, 4, 5, 6];
+console.log(_checker.checkerTool.checkArray(arr1));
+var arr2 = [1, 1, 2, 0, 0, 3, 4, 5, 3];
 console.log(arr2);
-console.log(_checker2.default.checkArray(arr2));
+console.log(_checker.checkerTool.checkArray(arr2));
 
 /***/ }),
 /* 5 */
@@ -504,8 +525,6 @@ var _tool2 = _interopRequireDefault(_tool);
 
 var _checker = __webpack_require__(2);
 
-var _checker2 = _interopRequireDefault(_checker);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -519,8 +538,6 @@ var Make = function () {
 		this.matrix = null;
 		// 9 * 9 索引数组表
 		this.orders = null;
-		// 是否执行成功
-		this._isSuccess = false;
 	}
 
 	_createClass(Make, [{
@@ -592,7 +609,7 @@ var Make = function () {
 					continue;
 				}
 				// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
-				if (!_checker2.default.checkFillable(this.matrix, n, row_index, col_index)) {
+				if (!_checker.checkerTool.checkFillable(this.matrix, n, row_index, col_index)) {
 					continue;
 				}
 
