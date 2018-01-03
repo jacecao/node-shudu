@@ -1,11 +1,11 @@
 // 数据生成工具
-import matrix from "./matrix.js";
+import matrixTool from "./matrixTool.js";
 // 计算工具
 import tool from "./tool.js";
 // 检查工具
 import {checkerTool} from "./checker.js";
 // 生成数独，（随机计算出所有的格子应该填写的数字）
-export default class Make {
+export default class MakeSolution {
 
 	constructor () {
 		// 九宫格二维数组
@@ -24,11 +24,11 @@ export default class Make {
 		// 生成9 * 9 二维数组
 		// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
 		// 及实现清空操作，理解这一点也非常重要
-		this.matrix = matrix.makeMatrix();
+		this.matrix = matrixTool.makeMatrix();
 		// 建立随机索引数组
 		// 其实这里可以理解为是matri的索引表
 		// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
-		this.orders = matrix.makeMatrix()
+		this.orders = matrixTool.makeMatrix()
 			.map( row => row.map( (v, i) => i ) )
 			.map( row => tool.shuffle(row) );
 

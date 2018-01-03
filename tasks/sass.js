@@ -10,3 +10,10 @@ gulp.task('sass', function() {
         .pipe(gulp.dest(src.css))
         .pipe(browserSync.reload({ stream: true }));
 });
+
+gulp.task('sass-test', function() {
+    return gulp
+        .src(src.scss)
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(src.test));
+});

@@ -1,6 +1,6 @@
 // 检查对象
 import tool from './tool.js';
-import matrixTool from './matrix.js';
+import matrixTool from './matrixTool.js';
 
 const checkerTool = {
 	
@@ -94,6 +94,10 @@ class Checker {
 		this._matrixMarks = matrixTool.makeMatrix(true);
 	}
 
+	get matrix () {
+		return this._matrix;
+	}
+
 	get matrixMarks () {
 		return this._matrixMarks;
 	}
@@ -147,13 +151,13 @@ class Checker {
 			// 循环去追
 			for (let row_index = 0; row_index < 9; row_index ++) {
 				// 将取得的值存入col_arr
-				col_arr[col_index] = this._matrix[row_index][col_index];
+				col_arr[row_index] = this._matrix[row_index][col_index];
 			}
 			// 检查和标记列
 			let col_marks = checkerTool.checkArray(col_arr);
 			// 将每列标记结果合并到matrixMarks中
 			for (let row_i = 0; row_i < col_marks.length; row_i++) {
-				if (!col_marks[i]) {
+				if (!col_marks[row_i]) {
 					this._matrixMarks[row_i][col_index] = false;
 				}
 			}
@@ -180,7 +184,7 @@ class Checker {
 					// 当前标记为false时，找到当前值得索引
 					// 需要注意的是，标记中的顺序和宫内取得的元素是一一对应的
 					// 这里再次体现数据结构在程序中的重要性
-					// 这里建立多张相互关联的表，理清各个标之间的关系
+					// 这里建立多张相互关联的表，理清各个表（也就是二维数组）之间的关系很重要
 					let {rowIndex, colIndex} = boxValueIndex[j];
 					this._matrixMarks[rowIndex][colIndex] = false;
 				}

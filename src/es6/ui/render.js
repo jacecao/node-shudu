@@ -23,16 +23,22 @@ export default class Render {
 			if (i % 9 == 1) {
 				html += '<tr>';
 			}
+			// 判断是否需要加底边框
+			// 为了生成九宫‘格’
 			if (i % 9 == 3 || i % 9 == 6) {
 				html += '<tr class="border-bottom">';
 			}
 			// 构建该行的单元格
 			// 第二维遍历
 			for (let j = 1; j <= data[i-1].length; j++) {
+				// 如果数据中有等于0，那么就不显示任何数据
+				let show_data = data[i-1][j-1] == 0 ? '' : data[i-1][j-1];
+				// 这里判断是否需要生成右边框
+				// 这里目的同样是为了生成九宫‘格’
 				if (j % 9 == 3 || j % 9 == 6) {
-					html += `<td class="border-right" data-i="${i-1}" data-j="${j - 1}">${data[i-1][j - 1]}</td>`;
+					html += `<td class="border-right" data-i="${i-1}" data-j="${j - 1}">${show_data}</td>`;
 				} else {
-					html += `<td data-i="${i-1}" data-j="${j - 1}">${data[i-1][j - 1]}</td>`;
+					html += `<td data-i="${i-1}" data-j="${j - 1}">${show_data}</td>`;
 				}
 				// 加入每行的闭合标签
 				if (j % 9 == 0) {

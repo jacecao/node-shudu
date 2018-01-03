@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -320,192 +320,6 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.Checker = exports.checkerTool = undefined;
-
-var _tool = __webpack_require__(1);
-
-var _tool2 = _interopRequireDefault(_tool);
-
-var _matrix = __webpack_require__(0);
-
-var _matrix2 = _interopRequireDefault(_matrix);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } // 检查对象
-
-
-var checkerTool = {
-
-	// 检查数值在九宫内填写合法
-	/* matrix 九宫二维数组
- ** n 需要填入的数值
- ** row_index 行索引值
- ** col_index 列索引值
- **/
-	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
-		// 按行、按列、按宫来检查数据
-		// 抽取行数据
-		var row_arr = matrix[row_index];
-		// 抽取列数据
-		var col_arr = _tool2.default.getCol(matrix, col_index);
-		// 抽取宫数据
-		var box_arr = [];
-		// 对象结构赋值
-		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
-
-		var _tool$convertPosition = _tool2.default.convertPosition(row_index, col_index),
-		    rowIndex = _tool$convertPosition.rowIndex,
-		    colIndex = _tool$convertPosition.colIndex;
-		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
-
-
-		var _matrixTool$boxMatrix = _matrix2.default.boxMatrix(matrix, rowIndex, colIndex),
-		    boxValue = _matrixTool$boxMatrix.boxValue;
-
-		if (boxValue) {
-			box_arr = boxValue;
-		} else {
-			console.log('\u83B7\u53D6\u2018\u5BAB\u5185\u2019\u6570\u636E\u5931\u8D25\uFF0Cbox_obj: ' + box_obj);
-		}
-
-		for (var i = 0; i < 9; i++) {
-			if (row_arr[i] == n || col_arr[i] == n || box_arr[i] == n) {
-				return false;
-			}
-		}
-
-		return true;
-	},
-
-
-	/*
- ** 数独-检查-标记
- ** array 一维数组
- ** 这里我们使用的检查核心依然是一张表
- ** 目前我们在制作数独游戏中已经有了2张数据表
- ** 这两张数据表产生于make类
- ** 1张是生成的数独二维数据表， 这张表将用于记录当前执行代码过程中生成的正确数独排序
- ** 1张是生成上面的数独排序表时，我们所采用的随机序列表，通过该表来随机生成数独排序
- ** 那么当前我们检查数组内的值是否符合数独游戏，那么需要生成一张新的表，用于记录用户
- ** 填写的数据的正确和错误，这三张表都是一一对应的关系
- ** checkArray就是用于组成这张表的
- */
-	checkArray: function checkArray(array) {
-		var len = array.length;
-		// 创建检查标记数组
-		var marks = new Array(9);
-		// 标记数组初始值都为true
-		marks.fill(true);
-
-		for (var i = 0; i < len - 1; i++) {
-			var v = array[i];
-			// 如果当前位置的标记为false
-			// 那么跳过本次检查
-			if (!marks[i]) {
-				continue;
-			}
-			// 如果当前值为0 ， 那么为false
-			// 注意，这里我们需要注意，数独中没填写的空位 0 
-			if (v == 0) {
-				marks[i] = false;
-			}
-
-			for (var j = i + 1; j < len; j++) {
-				// 当数组中出现相等的值时
-				// 那么都标记为false
-				if (array[j] == v) {
-					marks[i] = marks[j] = false;
-				}
-			}
-		}
-
-		return marks;
-	}
-};
-
-var Checker = function Checker() {
-	_classCallCheck(this, Checker);
-};
-
-exports.checkerTool = checkerTool;
-exports.Checker = Checker;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(4);
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _matrix = __webpack_require__(0);
-
-var _matrix2 = _interopRequireDefault(_matrix);
-
-var _tool = __webpack_require__(1);
-
-var _tool2 = _interopRequireDefault(_tool);
-
-var _make = __webpack_require__(5);
-
-var _make2 = _interopRequireDefault(_make);
-
-var _checker = __webpack_require__(2);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// 工具测试
-/*
-let items = matrix.makeMatrix();
-let _arrs = items.map(item => item.map((v, i) => i));
-let arrs = _arrs.map( arr => tool.shuffle(arr));
-console.log(arrs);
-
-let cell = tool.convertPosition(5, 6);
-console.log(cell);
-let box = matrix.boxMatrix(arrs, cell.rowIndex, cell.colIndex);
-console.log(box.boxValue);
-console.log(arrs[cell.rowIndex][cell.colIndex]);
-console.log(box.boxValueIndex);
-*/
-
-// make类测试
-/*
-const maker = new Make();
-maker.init();
-console.log(maker.matrix);
-*/
-
-// checker test
-
-// export default {name: 'test'}
-var arr = [1, 2, 3, 4, 5, 8, 9, 7, 6];
-console.log(arr);
-console.log(_checker.checkerTool.checkArray(arr));
-var arr1 = [1, 2, 0, 3, 4, 0, 0, 8, 9];
-console.log(arr1);
-console.log(_checker.checkerTool.checkArray(arr1));
-var arr2 = [1, 1, 2, 0, 0, 3, 4, 5, 3];
-console.log(arr2);
-console.log(_checker.checkerTool.checkArray(arr2));
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
 exports.default = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数据生成工具
@@ -515,24 +329,24 @@ var _createClass = function () { function defineProperties(target, props) { for 
 // 检查工具
 
 
-var _matrix = __webpack_require__(0);
+var _matrixTool = __webpack_require__(0);
 
-var _matrix2 = _interopRequireDefault(_matrix);
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
 
 var _tool = __webpack_require__(1);
 
 var _tool2 = _interopRequireDefault(_tool);
 
-var _checker = __webpack_require__(2);
+var _checker = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 // 生成数独，（随机计算出所有的格子应该填写的数字）
-var Make = function () {
-	function Make() {
-		_classCallCheck(this, Make);
+var MakeSolution = function () {
+	function MakeSolution() {
+		_classCallCheck(this, MakeSolution);
 
 		// 九宫格二维数组
 		this.matrix = null;
@@ -540,7 +354,7 @@ var Make = function () {
 		this.orders = null;
 	}
 
-	_createClass(Make, [{
+	_createClass(MakeSolution, [{
 		key: "init",
 		value: function init() {
 			while (!this._generator()) {
@@ -553,11 +367,11 @@ var Make = function () {
 			// 生成9 * 9 二维数组
 			// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
 			// 及实现清空操作，理解这一点也非常重要
-			this.matrix = _matrix2.default.makeMatrix();
+			this.matrix = _matrixTool2.default.makeMatrix();
 			// 建立随机索引数组
 			// 其实这里可以理解为是matri的索引表
 			// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
-			this.orders = _matrix2.default.makeMatrix().map(function (row) {
+			this.orders = _matrixTool2.default.makeMatrix().map(function (row) {
 				return row.map(function (v, i) {
 					return i;
 				});
@@ -632,10 +446,432 @@ var Make = function () {
 		}
 	}]);
 
-	return Make;
+	return MakeSolution;
 }();
 
-exports.default = Make;
+exports.default = MakeSolution;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.Checker = exports.checkerTool = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 检查对象
+
+
+var _tool = __webpack_require__(1);
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _matrixTool = __webpack_require__(0);
+
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var checkerTool = {
+
+	// 检查数值在九宫内填写合法
+	/* matrix 九宫二维数组
+ ** n 需要填入的数值
+ ** row_index 行索引值
+ ** col_index 列索引值
+ **/
+	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+		// 按行、按列、按宫来检查数据
+		// 抽取行数据
+		var row_arr = matrix[row_index];
+		// 抽取列数据
+		var col_arr = _tool2.default.getCol(matrix, col_index);
+		// 抽取宫数据
+		var box_arr = [];
+		// 对象结构赋值
+		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
+
+		var _tool$convertPosition = _tool2.default.convertPosition(row_index, col_index),
+		    rowIndex = _tool$convertPosition.rowIndex,
+		    colIndex = _tool$convertPosition.colIndex;
+		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
+
+
+		var _matrixTool$boxMatrix = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
+		    boxValue = _matrixTool$boxMatrix.boxValue;
+
+		if (boxValue) {
+			box_arr = boxValue;
+		} else {
+			console.log('\u83B7\u53D6\u2018\u5BAB\u5185\u2019\u6570\u636E\u5931\u8D25\uFF0Cbox_obj: ' + box_obj);
+		}
+
+		for (var i = 0; i < 9; i++) {
+			if (row_arr[i] == n || col_arr[i] == n || box_arr[i] == n) {
+				return false;
+			}
+		}
+
+		return true;
+	},
+
+
+	/*
+ ** 数独-检查-标记
+ ** array 一维数组
+ ** 这里我们使用的检查核心依然是一张表
+ ** 目前我们在制作数独游戏中已经有了2张数据表
+ ** 这两张数据表产生于make类
+ ** 1张是生成的数独二维数据表， 这张表将用于记录当前执行代码过程中生成的正确数独排序
+ ** 1张是生成上面的数独排序表时，我们所采用的随机序列表，通过该表来随机生成数独排序
+ ** 那么当前我们检查数组内的值是否符合数独游戏，那么需要生成一张新的表，用于记录用户
+ ** 填写的数据的正确和错误，这三张表都是一一对应的关系
+ ** checkArray就是用于组成这张表的
+ */
+	checkArray: function checkArray(array) {
+		var len = array.length;
+		// 创建检查标记数组
+		var marks = new Array(9);
+		// 标记数组初始值都为true
+		marks.fill(true);
+
+		for (var i = 0; i < len - 1; i++) {
+			var v = array[i];
+			// 如果当前位置的标记为false
+			// 那么跳过本次检查
+			if (!marks[i]) {
+				continue;
+			}
+			// 如果当前值为0 ， 那么为false
+			// 注意，这里我们需要注意，数独中没填写的空位 0 
+			if (v == 0) {
+				marks[i] = false;
+			}
+
+			for (var j = i + 1; j < len; j++) {
+				// 当数组中出现相等的值时
+				// 那么都标记为false
+				if (array[j] == v) {
+					marks[i] = marks[j] = false;
+				}
+			}
+		}
+
+		return marks;
+	}
+};
+
+var Checker = function () {
+	function Checker(matrix) {
+		_classCallCheck(this, Checker);
+
+		this._matrix = matrix;
+		this._matrixMarks = _matrixTool2.default.makeMatrix(true);
+	}
+
+	_createClass(Checker, [{
+		key: 'check',
+		value: function check() {
+			// 检查行
+			this.checkRow();
+			// 检查列
+			this.checkCol();
+			// 检查宫
+			this.checkBox();
+
+			// 检查整个二维数组的标记
+			// 这里需要注意数组的every()方法
+			// 这是在ES5中新增的遍历方法
+			// 常用于测试数组的所有元素是否都通过了指定函数的测试。
+			// 如果有一个返回false,那么整个函数都将返回false
+			// 如果所有为true, 那么返回true
+			// 所以用在这里就非常合适
+			this._success = this._matrixMarks.every(function (row) {
+				return row.every(function (mark) {
+					return mark;
+				});
+			});
+			return this._success;
+		}
+
+		// 标记行
+
+	}, {
+		key: 'checkRow',
+		value: function checkRow() {
+			for (var row_index = 0; row_index < 9; row_index++) {
+				// 取每一行的数组
+				var row_arr = this._matrix[row_index];
+				// 对每一行数组进行检查和标记
+				var row_marks = checkerTool.checkArray(row_arr);
+				// 将每一行的标记结果合并到matrixMarks二维数组中
+				for (var col_index = 0; col_index < row_marks.length; col_index++) {
+					// matrixMarks原始值都为true
+					// 这里如果在检查结果中有false,那么将false值写入matrixMarks对应的位置
+					if (!row_marks[col_index]) {
+						this._matrixMarks[row_index][col_index] = false;
+					}
+				}
+			}
+		}
+
+		// 标记列
+
+	}, {
+		key: 'checkCol',
+		value: function checkCol() {
+			for (var col_index = 0; col_index < 9; col_index++) {
+				// 用于存放列中的值
+				var col_arr = [];
+				// 循环去追
+				for (var row_index = 0; row_index < 9; row_index++) {
+					// 将取得的值存入col_arr
+					col_arr[row_index] = this._matrix[row_index][col_index];
+				}
+				// 检查和标记列
+				var col_marks = checkerTool.checkArray(col_arr);
+				// 将每列标记结果合并到matrixMarks中
+				for (var row_i = 0; row_i < col_marks.length; row_i++) {
+					if (!col_marks[row_i]) {
+						this._matrixMarks[row_i][col_index] = false;
+					}
+				}
+			}
+		}
+
+		// 标记宫
+
+	}, {
+		key: 'checkBox',
+		value: function checkBox() {
+			for (var i = 0; i < 9; i++) {
+				// 每个宫中第一个元素的坐标获取
+				// convertBox返回的是一个记录宫第一个元素的坐标对象
+				// 这里解构赋值
+				var _tool$convertBox = _tool2.default.convertBox(i),
+				    rowIndex = _tool$convertBox.rowIndex,
+				    colIndex = _tool$convertBox.colIndex;
+				// 这里根据宫的第一个坐标值，我们获取宫内所有的值和对应的坐标
+				// 这里返回的依然是一个对象
+				// boxValue 是一个数组，包含了当前宫内的数
+				// boxValueIndex 是一个数组，元素为对象，记录了值对应在二维数组中的索引值
+
+
+				var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
+				    boxValue = _matrixTool$boxMatrix2.boxValue,
+				    boxValueIndex = _matrixTool$boxMatrix2.boxValueIndex;
+				// 标记宫内元素
+
+
+				var box_marks = checkerTool.checkArray(boxValue);
+				// 将宫内标记结果合并到matrixMarks中
+				for (var j = 0; j < box_marks.length; j++) {
+					if (!box_marks[j]) {
+						// 当前标记为false时，找到当前值得索引
+						// 需要注意的是，标记中的顺序和宫内取得的元素是一一对应的
+						// 这里再次体现数据结构在程序中的重要性
+						// 这里建立多张相互关联的表，理清各个表（也就是二维数组）之间的关系很重要
+						var _boxValueIndex$j = boxValueIndex[j],
+						    _rowIndex = _boxValueIndex$j.rowIndex,
+						    _colIndex = _boxValueIndex$j.colIndex;
+
+						this._matrixMarks[_rowIndex][_colIndex] = false;
+					}
+				}
+			}
+		}
+	}, {
+		key: 'matrix',
+		get: function get() {
+			return this._matrix;
+		}
+	}, {
+		key: 'matrixMarks',
+		get: function get() {
+			return this._matrixMarks;
+		}
+	}, {
+		key: 'isSuccess',
+		get: function get() {
+			return this._success;
+		}
+	}]);
+
+	return Checker;
+}();
+
+exports.checkerTool = checkerTool;
+exports.Checker = Checker;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(5);
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _matrixTool = __webpack_require__(0);
+
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
+
+var _tool = __webpack_require__(1);
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _makeSolution = __webpack_require__(2);
+
+var _makeSolution2 = _interopRequireDefault(_makeSolution);
+
+var _checker = __webpack_require__(3);
+
+var _shuduku = __webpack_require__(6);
+
+var _shuduku2 = _interopRequireDefault(_shuduku);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var shudu = new _shuduku2.default();
+
+// 工具测试
+
+// matrixTool 二维数组生成工具测试
+/*
+let items = matrixTool.makeMatrix();
+let _arrs = items.map(item => item.map((v, i) => i));
+let arrs = _arrs.map( arr => tool.shuffle(arr));
+console.log(arrs);
+*/
+
+// 索引关系转换工具测试
+/*
+let cell = tool.convertPosition(5, 6);
+console.log(cell);
+let box = matrixTool.boxMatrix(arrs, cell.rowIndex, cell.colIndex);
+console.log(box.boxValue);
+console.log(arrs[cell.rowIndex][cell.colIndex]);
+console.log(box.boxValueIndex);
+*/
+
+// make类测试
+/*
+const maker = new MakeSolution();
+maker.init();
+console.log(maker.matrix);
+*/
+
+// checker test
+/*
+let arr = [1,2,3,4,5,8,9,7,6];
+console.log(arr);
+console.log(checkerTool.checkArray(arr));
+let arr1 = [1,2,0,3,4,0,0,8,9];
+console.log(arr1);
+console.log(checkerTool.checkArray(arr1));
+let arr2 = [1,1,2,0,0,3,4,5,3]
+console.log(arr2);
+console.log(checkerTool.checkArray(arr2));
+*/
+
+//  Checker 类 测试
+/*
+const maker = new MakeSolution();
+maker.init();
+const matrix_arr = maker.matrix;
+
+const checker = new Checker(matrix_arr);
+checker.check();
+console.log(checker.matrix);
+console.log(checker.matrixMarks);
+console.log(checker.isSuccess);
+
+matrix_arr[1][2] = 0;
+matrix_arr[3][6] = matrix_arr[8][6];
+const checker2 = new Checker(matrix_arr);
+checker2.check();
+console.log(checker.matrix);
+console.log(checker2.matrixMarks);
+console.log(checker2.isSuccess);
+*/
+
+// export default {name: 'test'}
+
+shudu.makePuzzle();
+console.log(shudu.solutionMatrix);
+console.log(shudu.puzzleMatrix);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数独库
+// 数独游戏 工厂构建
+// 这里需要实现 数独解决方案的生成  数独游戏盘的生成
+
+
+var _makeSolution = __webpack_require__(2);
+
+var _makeSolution2 = _interopRequireDefault(_makeSolution);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Shuduku = function () {
+	function Shuduku() {
+		_classCallCheck(this, Shuduku);
+
+		// 生成数独解决方案
+		var maker = new _makeSolution2.default();
+		maker.init();
+		// 储存解决方案
+		this.solutionMatrix = maker.matrix;
+	}
+
+	// 生成棋盘数独
+	// level 难度系数
+
+
+	_createClass(Shuduku, [{
+		key: 'makePuzzle',
+		value: function makePuzzle() {
+			var level = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
+
+			this.puzzleMatrix = this.solutionMatrix.map(function (row) {
+				// 前面很多地方我们使用map方法都没有加return
+				// 是因为箭头函数在执行单行代码时，默认将单行代码结果返回
+				// 而这里我们使用{}时，就必须手动return 返回值
+				return row.map(function (cell) {
+					return Math.random() * 9 < level ? 0 : cell;
+				});
+			});
+		}
+	}]);
+
+	return Shuduku;
+}();
+
+exports.default = Shuduku;
 
 /***/ })
 /******/ ]);

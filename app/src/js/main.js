@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 124);
+/******/ 	return __webpack_require__(__webpack_require__.s = 126);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2388,7 +2388,7 @@ module.exports = __webpack_require__(21).getIteratorMethod = function (it) {
 
 
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
-var speciesConstructor = __webpack_require__(218);
+var speciesConstructor = __webpack_require__(220);
 
 module.exports = function (original, length) {
   return new (speciesConstructor(original))(length);
@@ -3976,8 +3976,97 @@ module.exports = Math.scale || function scale(x, inLow, inHigh, outLow, outHigh)
 /* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(125);
+"use strict";
 
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+// 9 * 9 二维基础数组生成 和 费雪耶兹排序随机排序
+// 该模块返回的都是数组
+exports.default = {
+
+	//生成一个一维数组
+	makeRow: function makeRow() {
+		var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+		var array = new Array(9);
+		array.fill(v);
+		return array;
+	},
+
+
+	// 生成一个二维数组
+	makeMatrix: function makeMatrix() {
+		var _this = this;
+
+		var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+		// 注意这里我们为什么不采用上面的方法来生产二维数组呢？
+		/*
+  const array = new Array(9);
+  array.fill(makeRow(v));
+  return array;
+   */
+		// 如果我们按照上面方法生产一个二维数组，那么二维数组内的
+		// 所有一维数组都将指向makeRow(v)运行一次后得到的数据
+		// 这样的后果就是一旦其中一个一维数组发生变化，将导致所有的一维
+		// 数组发生变化，这不是我们所希望的
+
+		// 下面这样的做法，是每个一维数组都会通过运行makeRow()
+		// 来得到一个新的数组（这里主要就是需要理解引用类型数据的运作机制）
+		return Array.from({ length: 9 }, function () {
+			return _this.makeRow(v);
+		});
+	},
+
+
+	// 获取九宫格数组
+	// matrix: 二维数组
+	// row_index: 宫内第一个元素的第一维起始索引
+	// col_index: 宫内第一个元素的第二维起始索引
+	// 取值方式如下所示：
+	// [（matri数组中的一部分）
+	// 	[a,b,c],  [0,1,2
+	// 	[1,2,3],  3,4,5
+	// 	[o,p,q]   6,7,8]
+	// ]
+	// 通过该方法，以a元素的索引为起点，将a,b,c,1,2,3,o,p,q取出
+	// 注意这里返回的是一个长度为9的数组
+	boxMatrix: function boxMatrix(matrix) {
+		var row_index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+		var col_index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+		// 保存九宫格数组
+		var box_arr = [];
+		// 保存九宫格中每个值对应的索引
+		var box_index = [];
+		// 保存每列的起始位置
+		var _start_index = col_index;
+		// 保存将要取值目标的位置
+		var _target_index = col_index;
+		for (var i = 0; i < 9; i++) {
+			// 注意这里需要排除 i = 0（也就是在初始行中取完3个值以后才能进入下一列）
+			// 如果不排除 i=0 ，那么一开始就会跳入到下一列进行取值，违背我们的初衷
+			if (i != 0 && i % 3 == 0) {
+				// 这里是保证每一行只取三个值
+				// 取满三个值后转入下一列
+				row_index += 1;
+				_target_index = _start_index;
+			}
+			box_arr.push(matrix[row_index][_target_index]);
+			box_index.push({ rowIndex: row_index, colIndex: _target_index });
+			_target_index += 1;
+		}
+		// 返回我们最终的取值
+		if (box_arr.length != 9) {
+			console.info('box_matrix was failed');
+			return null;
+		} else {
+			return { boxValue: box_arr, boxValueIndex: box_index };
+		}
+	}
+};
 
 /***/ }),
 /* 125 */
@@ -3986,21 +4075,182 @@ module.exports = __webpack_require__(125);
 "use strict";
 
 
-__webpack_require__(126);
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+// 辅助数据检查工具
+exports.default = {
+	// 九宫格坐标换算
+	// 这里的box_x / y是什么意思呢？
+	// 就是指在九宫格中每个格的坐标位置 请参考box_position.png
+	/*  
+ ** 九宫格中每个宫的坐标是这样的
+ **  (0, 0)   (1, 0)   (2, 0)
+ **  
+ **  (0, 1)   (1, 1)   (2, 1)
+ **
+ **  (0, 2)   (1, 2)   (2, 2)
+  */
+	// 下面box_x/y就代表每个宫的（x,y）坐标
+	// 而这个宫坐标就是通过 9 * 9 这样的坐标来确定的
+	// 如下面的排列，这就反应了9 * 9二维数组与九宫格的关系
+	/*  0  1  2 | 3  4 5| 6 7 8
+ **  1 (0,0) | (1,0) | (2,0)
+ *   2       |       |
+ *   ........................
+ *   3 (0,1) | (1,1) | (1,2)
+ *   4       |       |
+ *   5       |       |
+ *   ........................
+ *   6 (0,2) | (1,2) | (2,2)
+ *   7       |       |
+ *   8       |       | 
+  */
+	// row_index col_index 是二维数组中的坐标（也就是索引值）
+	// row_index 第一维数组的索引
+	// col_index 第二维数组中的所有
+	convertPosition: function convertPosition(row_index, col_index) {
+		// box_x/y 用于储存九宫格中宫的坐标
+		var box_x = Math.floor(col_index / 3);
+		var box_y = Math.floor(row_index / 3);
+		// 根据上面的宫坐标，接下来，我们需要确定宫中格子的坐标
+		// 首要目标是确定一个格子的坐标
+		// 需要注意这里的格子坐标，实际是指在二维数组中的索引
+		// 如下面示意，这里我们展示其中一个宫中的数据
+		/*
+     （box_x, box_y） = (1, 2);
+        宫坐标为（1，2）中的数据
+  		-------------
+  		| 0 | 1 | 2 |
+  		-------------
+  		| 3 | 4 | 5 |
+  		-------------
+  		| 6 | 7 | 8 |
+  		-------------
+   */
+		// 我们需要确定0这个格在二维数组中的索引
+		// 我们通过0这个格子的索引，就能确定这9个格子在二维数组中的索引
+		// 通过该索引我们就能获取这个9个格子所拥有的值
+		// 这样就方便检查工具，检查在一个宫中是否有重复的值
+		var cell_x = box_x * 3;
+		var cell_y = box_y * 3;
+		// 注意我们需要将这里的x,y对应二维数组转换为索引
+		// 第一维索引对应的是y坐标,第二维对应的是x坐标
+		// cell_first 的row_index = cell_y, col_index = cell_x
+		// 根据这个方法，我们就可以确定宫坐标为（1，2）中第一个格子
+		// 在二维数组中的索引就是（3，6）
+		// 第一维数组中的索引为3，第二维数组中的索引为6
+		// ***【这里如果理解困难请参考box_positions.png】***
 
-var _render = __webpack_require__(329);
+		// 这里返回的是一个对象
+		// 该对象为 ’当前索引指向的值‘ 所在的’宫‘中第一个元素在9 * 9 二维数组中的 ’索引‘
+		return { rowIndex: cell_y, colIndex: cell_x };
+	},
+
+
+	// 根据宫的索引值来获取宫的首个元素的索引值
+	// box_index 为宫的索引值
+	/*  0  1  2 | 3  4 5| 6 7 8
+ **  1 ( 0 ) | ( 1 ) | ( 2 )
+ *   2       |       |
+ *   ........................
+ *   3 ( 3 ) | ( 4 ) | ( 5 )
+ *   4       |       |
+ *   5       |       |
+ *   ........................
+ *   6 ( 6 ) | ( 7 ) | ( 8 )
+ *   7       |       |
+ *   8       |       | 
+  */
+	convertBox: function convertBox() {
+		var box_index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+		var first_cell_col = box_index % 3 * 3;
+		var first_cell_row = Math.floor(box_index / 3) * 3;
+		return {
+			rowIndex: first_cell_row,
+			colIndex: first_cell_col
+		};
+	},
+
+
+	// 获取二维数组中指定列的数值
+	// matrix 二维数组
+	// colIndex 指定的列
+	getCol: function getCol(matrix, colIndex) {
+		// 保存列中的数值
+		var arr = [];
+		for (var i = 0; i < 9; i++) {
+			arr.push(matrix[i][colIndex]);
+		};
+		return arr;
+	},
+
+	/*
+ ** Fisher-Yates 费雪耶兹随机置乱算法
+ **
+  */
+	shuffle: function shuffle(array) {
+		// 需要运算的次数，应该是array.length - 1
+		// 因为最后一次不需要作任何运算，所以就不需要执行
+		// 这里需要理解这种算法的特点才行
+		var endIndex = array.length - 2;
+		for (var i = 0; i <= endIndex; i++) {
+			/*
+    取得一个随机数
+    注意随机的数据必须是当前遍历到的数据的后面的数据
+    什么意思呢？
+    a = [1,2,3,4,5]
+    如果当前已经遍历到2这个数值
+    那么随机取值就必须是在2后面的数据中随机抽取
+    也就是只能在3，4，5中取得
+    下面这个_r就是这个用意
+   */
+			// Math.random() * array.length
+			// 这个取值范围就是 0 和 array.length 之间 但不包含array.length
+			var _r = i + Math.floor(Math.random() * (array.length - i));
+			// 将随机取得的值替换当前遍历的值
+			// 这里我们通过解构来赋值
+			var _ref = [array[_r], array[i]];
+			array[i] = _ref[0];
+			array[_r] = _ref[1];
+		}
+		return array;
+	}
+};
+
+/***/ }),
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(127);
+
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(128);
+
+var _render = __webpack_require__(331);
 
 var _render2 = _interopRequireDefault(_render);
 
-var _data = __webpack_require__(330);
+var _shuduku = __webpack_require__(332);
 
-var _data2 = _interopRequireDefault(_data);
+var _shuduku2 = _interopRequireDefault(_shuduku);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var data = new _shuduku2.default();
+data.makePuzzle();
+
 var view = new _render2.default({
 	container: '#container',
-	data: _data2.default.makeMatrix()
+	data: data.puzzleMatrix
 });
 
 // 初始化主视图
@@ -4013,17 +4263,17 @@ window.addEventListener('resize', function () {
 }, false);
 
 /***/ }),
-/* 126 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 
-__webpack_require__(127);
-
-__webpack_require__(324);
+__webpack_require__(129);
 
 __webpack_require__(326);
+
+__webpack_require__(328);
 
 if (global._babelPolyfill) {
   throw new Error("only one instance of babel-polyfill is allowed");
@@ -4048,15 +4298,13 @@ define(String.prototype, "padRight", "".padEnd);
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(89)))
 
 /***/ }),
-/* 127 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(128);
 __webpack_require__(130);
-__webpack_require__(131);
 __webpack_require__(132);
 __webpack_require__(133);
 __webpack_require__(134);
@@ -4070,8 +4318,8 @@ __webpack_require__(141);
 __webpack_require__(142);
 __webpack_require__(143);
 __webpack_require__(144);
+__webpack_require__(145);
 __webpack_require__(146);
-__webpack_require__(147);
 __webpack_require__(148);
 __webpack_require__(149);
 __webpack_require__(150);
@@ -4131,17 +4379,17 @@ __webpack_require__(203);
 __webpack_require__(204);
 __webpack_require__(205);
 __webpack_require__(206);
+__webpack_require__(207);
 __webpack_require__(208);
-__webpack_require__(209);
+__webpack_require__(210);
 __webpack_require__(211);
-__webpack_require__(212);
 __webpack_require__(213);
 __webpack_require__(214);
 __webpack_require__(215);
 __webpack_require__(216);
 __webpack_require__(217);
+__webpack_require__(218);
 __webpack_require__(219);
-__webpack_require__(220);
 __webpack_require__(221);
 __webpack_require__(222);
 __webpack_require__(223);
@@ -4153,20 +4401,20 @@ __webpack_require__(228);
 __webpack_require__(229);
 __webpack_require__(230);
 __webpack_require__(231);
-__webpack_require__(84);
 __webpack_require__(232);
 __webpack_require__(233);
-__webpack_require__(108);
+__webpack_require__(84);
 __webpack_require__(234);
 __webpack_require__(235);
+__webpack_require__(108);
 __webpack_require__(236);
 __webpack_require__(237);
 __webpack_require__(238);
+__webpack_require__(239);
+__webpack_require__(240);
 __webpack_require__(111);
 __webpack_require__(113);
 __webpack_require__(114);
-__webpack_require__(239);
-__webpack_require__(240);
 __webpack_require__(241);
 __webpack_require__(242);
 __webpack_require__(243);
@@ -4250,10 +4498,12 @@ __webpack_require__(320);
 __webpack_require__(321);
 __webpack_require__(322);
 __webpack_require__(323);
+__webpack_require__(324);
+__webpack_require__(325);
 module.exports = __webpack_require__(21);
 
 /***/ }),
-/* 128 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4275,7 +4525,7 @@ var uid = __webpack_require__(32);
 var wks = __webpack_require__(5);
 var wksExt = __webpack_require__(91);
 var wksDefine = __webpack_require__(64);
-var enumKeys = __webpack_require__(129);
+var enumKeys = __webpack_require__(131);
 var isArray = __webpack_require__(52);
 var anObject = __webpack_require__(1);
 var toIObject = __webpack_require__(15);
@@ -4503,7 +4753,7 @@ setToStringTag(Math, 'Math', true);
 setToStringTag(global.JSON, 'JSON', true);
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4528,7 +4778,7 @@ module.exports = function (it) {
 };
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4539,7 +4789,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Object', { create: __webpack_require__(36) });
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4550,7 +4800,7 @@ var $export = __webpack_require__(0);
 $export($export.S + $export.F * !__webpack_require__(6), 'Object', { defineProperty: __webpack_require__(7).f });
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4561,7 +4811,7 @@ var $export = __webpack_require__(0);
 $export($export.S + $export.F * !__webpack_require__(6), 'Object', { defineProperties: __webpack_require__(93) });
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4578,7 +4828,7 @@ __webpack_require__(25)('getOwnPropertyDescriptor', function () {
 });
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4595,7 +4845,7 @@ __webpack_require__(25)('getPrototypeOf', function () {
 });
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4612,7 +4862,7 @@ __webpack_require__(25)('keys', function () {
 });
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4624,7 +4874,7 @@ __webpack_require__(25)('getOwnPropertyNames', function () {
 });
 
 /***/ }),
-/* 137 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4641,7 +4891,7 @@ __webpack_require__(25)('freeze', function ($freeze) {
 });
 
 /***/ }),
-/* 138 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4658,7 +4908,7 @@ __webpack_require__(25)('seal', function ($seal) {
 });
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4675,7 +4925,7 @@ __webpack_require__(25)('preventExtensions', function ($preventExtensions) {
 });
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4691,7 +4941,7 @@ __webpack_require__(25)('isFrozen', function ($isFrozen) {
 });
 
 /***/ }),
-/* 141 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4707,7 +4957,7 @@ __webpack_require__(25)('isSealed', function ($isSealed) {
 });
 
 /***/ }),
-/* 142 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4723,7 +4973,7 @@ __webpack_require__(25)('isExtensible', function ($isExtensible) {
 });
 
 /***/ }),
-/* 143 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4735,7 +4985,7 @@ var $export = __webpack_require__(0);
 $export($export.S + $export.F, 'Object', { assign: __webpack_require__(95) });
 
 /***/ }),
-/* 144 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4743,10 +4993,10 @@ $export($export.S + $export.F, 'Object', { assign: __webpack_require__(95) });
 
 // 19.1.3.10 Object.is(value1, value2)
 var $export = __webpack_require__(0);
-$export($export.S, 'Object', { is: __webpack_require__(145) });
+$export($export.S, 'Object', { is: __webpack_require__(147) });
 
 /***/ }),
-/* 145 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4759,7 +5009,7 @@ module.exports = Object.is || function is(x, y) {
 };
 
 /***/ }),
-/* 146 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4770,7 +5020,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Object', { setPrototypeOf: __webpack_require__(68).set });
 
 /***/ }),
-/* 147 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4787,7 +5037,7 @@ if (test + '' != '[object z]') {
 }
 
 /***/ }),
-/* 148 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4799,7 +5049,7 @@ var $export = __webpack_require__(0);
 $export($export.P, 'Function', { bind: __webpack_require__(96) });
 
 /***/ }),
-/* 149 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4823,7 +5073,7 @@ NAME in FProto || __webpack_require__(6) && dP(FProto, NAME, {
 });
 
 /***/ }),
-/* 150 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4844,7 +5094,7 @@ if (!(HAS_INSTANCE in FunctionProto)) __webpack_require__(7).f(FunctionProto, HA
   } });
 
 /***/ }),
-/* 151 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4856,7 +5106,7 @@ var $parseInt = __webpack_require__(98);
 $export($export.G + $export.F * (parseInt != $parseInt), { parseInt: $parseInt });
 
 /***/ }),
-/* 152 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4868,7 +5118,7 @@ var $parseFloat = __webpack_require__(99);
 $export($export.G + $export.F * (parseFloat != $parseFloat), { parseFloat: $parseFloat });
 
 /***/ }),
-/* 153 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4946,7 +5196,7 @@ if (!$Number(' 0o1') || !$Number('0b1') || $Number('+0x1')) {
 }
 
 /***/ }),
-/* 154 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5062,7 +5312,7 @@ $export($export.P + $export.F * (!!$toFixed && (0.00008.toFixed(3) !== '0.000' |
 });
 
 /***/ }),
-/* 155 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5087,7 +5337,7 @@ $export($export.P + $export.F * ($fails(function () {
 });
 
 /***/ }),
-/* 156 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5099,7 +5349,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Number', { EPSILON: Math.pow(2, -52) });
 
 /***/ }),
-/* 157 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5116,7 +5366,7 @@ $export($export.S, 'Number', {
 });
 
 /***/ }),
-/* 158 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5128,7 +5378,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Number', { isInteger: __webpack_require__(101) });
 
 /***/ }),
-/* 159 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5145,7 +5395,7 @@ $export($export.S, 'Number', {
 });
 
 /***/ }),
-/* 160 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5163,7 +5413,7 @@ $export($export.S, 'Number', {
 });
 
 /***/ }),
-/* 161 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5175,7 +5425,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Number', { MAX_SAFE_INTEGER: 0x1fffffffffffff });
 
 /***/ }),
-/* 162 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5187,7 +5437,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Number', { MIN_SAFE_INTEGER: -0x1fffffffffffff });
 
 /***/ }),
-/* 163 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5199,7 +5449,7 @@ var $parseFloat = __webpack_require__(99);
 $export($export.S + $export.F * (Number.parseFloat != $parseFloat), 'Number', { parseFloat: $parseFloat });
 
 /***/ }),
-/* 164 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5211,7 +5461,7 @@ var $parseInt = __webpack_require__(98);
 $export($export.S + $export.F * (Number.parseInt != $parseInt), 'Number', { parseInt: $parseInt });
 
 /***/ }),
-/* 165 */
+/* 167 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5234,7 +5484,7 @@ $export($export.S + $export.F * !($acosh
 });
 
 /***/ }),
-/* 166 */
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5252,7 +5502,7 @@ function asinh(x) {
 $export($export.S + $export.F * !($asinh && 1 / $asinh(0) > 0), 'Math', { asinh: asinh });
 
 /***/ }),
-/* 167 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5270,7 +5520,7 @@ $export($export.S + $export.F * !($atanh && 1 / $atanh(-0) < 0), 'Math', {
 });
 
 /***/ }),
-/* 168 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5287,7 +5537,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 169 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5303,7 +5553,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 170 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5320,7 +5570,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 171 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5333,7 +5583,7 @@ var $expm1 = __webpack_require__(73);
 $export($export.S + $export.F * ($expm1 != Math.expm1), 'Math', { expm1: $expm1 });
 
 /***/ }),
-/* 172 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5345,7 +5595,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { fround: __webpack_require__(103) });
 
 /***/ }),
-/* 173 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5379,7 +5629,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 174 */
+/* 176 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5404,7 +5654,7 @@ $export($export.S + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 175 */
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5420,7 +5670,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 176 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5432,7 +5682,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { log1p: __webpack_require__(102) });
 
 /***/ }),
-/* 177 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5448,7 +5698,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 178 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5460,7 +5710,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { sign: __webpack_require__(72) });
 
 /***/ }),
-/* 179 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5481,7 +5731,7 @@ $export($export.S + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 180 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5501,7 +5751,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 181 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5517,7 +5767,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 182 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5546,7 +5796,7 @@ $export($export.S + $export.F * (!!$fromCodePoint && $fromCodePoint.length != 1)
 });
 
 /***/ }),
-/* 183 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5572,7 +5822,7 @@ $export($export.S, 'String', {
 });
 
 /***/ }),
-/* 184 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5586,7 +5836,7 @@ __webpack_require__(43)('trim', function ($trim) {
 });
 
 /***/ }),
-/* 185 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5610,7 +5860,7 @@ __webpack_require__(75)(String, 'String', function (iterated) {
 });
 
 /***/ }),
-/* 186 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5626,7 +5876,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 187 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5651,7 +5901,7 @@ $export($export.P + $export.F * __webpack_require__(78)(ENDS_WITH), 'String', {
 });
 
 /***/ }),
-/* 188 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5669,7 +5919,7 @@ $export($export.P + $export.F * __webpack_require__(78)(INCLUDES), 'String', {
 });
 
 /***/ }),
-/* 189 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5683,7 +5933,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 190 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5706,7 +5956,7 @@ $export($export.P + $export.F * __webpack_require__(78)(STARTS_WITH), 'String', 
 });
 
 /***/ }),
-/* 191 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5720,7 +5970,7 @@ __webpack_require__(14)('anchor', function (createHTML) {
 });
 
 /***/ }),
-/* 192 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5734,7 +5984,7 @@ __webpack_require__(14)('big', function (createHTML) {
 });
 
 /***/ }),
-/* 193 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5748,7 +5998,7 @@ __webpack_require__(14)('blink', function (createHTML) {
 });
 
 /***/ }),
-/* 194 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5762,7 +6012,7 @@ __webpack_require__(14)('bold', function (createHTML) {
 });
 
 /***/ }),
-/* 195 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5776,7 +6026,7 @@ __webpack_require__(14)('fixed', function (createHTML) {
 });
 
 /***/ }),
-/* 196 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5790,7 +6040,7 @@ __webpack_require__(14)('fontcolor', function (createHTML) {
 });
 
 /***/ }),
-/* 197 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5804,7 +6054,7 @@ __webpack_require__(14)('fontsize', function (createHTML) {
 });
 
 /***/ }),
-/* 198 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5818,7 +6068,7 @@ __webpack_require__(14)('italics', function (createHTML) {
 });
 
 /***/ }),
-/* 199 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5832,7 +6082,7 @@ __webpack_require__(14)('link', function (createHTML) {
 });
 
 /***/ }),
-/* 200 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5846,7 +6096,7 @@ __webpack_require__(14)('small', function (createHTML) {
 });
 
 /***/ }),
-/* 201 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5860,7 +6110,7 @@ __webpack_require__(14)('strike', function (createHTML) {
 });
 
 /***/ }),
-/* 202 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5874,7 +6124,7 @@ __webpack_require__(14)('sub', function (createHTML) {
 });
 
 /***/ }),
-/* 203 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5888,7 +6138,7 @@ __webpack_require__(14)('sup', function (createHTML) {
 });
 
 /***/ }),
-/* 204 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5902,7 +6152,7 @@ $export($export.S, 'Date', { now: function now() {
   } });
 
 /***/ }),
-/* 205 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5926,7 +6176,7 @@ $export($export.P + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 206 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5934,7 +6184,7 @@ $export($export.P + $export.F * __webpack_require__(3)(function () {
 
 // 20.3.4.36 / 15.9.5.43 Date.prototype.toISOString()
 var $export = __webpack_require__(0);
-var toISOString = __webpack_require__(207);
+var toISOString = __webpack_require__(209);
 
 // PhantomJS / old WebKit has a broken implementations
 $export($export.P + $export.F * (Date.prototype.toISOString !== toISOString), 'Date', {
@@ -5942,7 +6192,7 @@ $export($export.P + $export.F * (Date.prototype.toISOString !== toISOString), 'D
 });
 
 /***/ }),
-/* 207 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5972,7 +6222,7 @@ module.exports = fails(function () {
 } : $toISOString;
 
 /***/ }),
-/* 208 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5992,7 +6242,7 @@ if (new Date(NaN) + '' != INVALID_DATE) {
 }
 
 /***/ }),
-/* 209 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6001,10 +6251,10 @@ if (new Date(NaN) + '' != INVALID_DATE) {
 var TO_PRIMITIVE = __webpack_require__(5)('toPrimitive');
 var proto = Date.prototype;
 
-if (!(TO_PRIMITIVE in proto)) __webpack_require__(12)(proto, TO_PRIMITIVE, __webpack_require__(210));
+if (!(TO_PRIMITIVE in proto)) __webpack_require__(12)(proto, TO_PRIMITIVE, __webpack_require__(212));
 
 /***/ }),
-/* 210 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6020,7 +6270,7 @@ module.exports = function (hint) {
 };
 
 /***/ }),
-/* 211 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6032,7 +6282,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Array', { isArray: __webpack_require__(52) });
 
 /***/ }),
-/* 212 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6078,7 +6328,7 @@ $export($export.S + $export.F * !__webpack_require__(54)(function (iter) {
 });
 
 /***/ }),
-/* 213 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6105,7 +6355,7 @@ $export($export.S + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 214 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6124,7 +6374,7 @@ $export($export.P + $export.F * (__webpack_require__(46) != Object || !__webpack
 });
 
 /***/ }),
-/* 215 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6158,7 +6408,7 @@ $export($export.P + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 216 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6186,7 +6436,7 @@ $export($export.P + $export.F * (fails(function () {
 });
 
 /***/ }),
-/* 217 */
+/* 219 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6204,7 +6454,7 @@ $export($export.P + $export.F * !STRICT, 'Array', {
 });
 
 /***/ }),
-/* 218 */
+/* 220 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6228,7 +6478,7 @@ module.exports = function (original) {
 };
 
 /***/ }),
-/* 219 */
+/* 221 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6245,7 +6495,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].map, true), 'Array',
 });
 
 /***/ }),
-/* 220 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6262,7 +6512,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].filter, true), 'Arra
 });
 
 /***/ }),
-/* 221 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6279,7 +6529,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].some, true), 'Array'
 });
 
 /***/ }),
-/* 222 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6296,7 +6546,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].every, true), 'Array
 });
 
 /***/ }),
-/* 223 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6313,7 +6563,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].reduce, true), 'Arra
 });
 
 /***/ }),
-/* 224 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6330,7 +6580,7 @@ $export($export.P + $export.F * !__webpack_require__(20)([].reduceRight, true), 
 });
 
 /***/ }),
-/* 225 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6351,7 +6601,7 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !__webpack_require__(20)($nati
 });
 
 /***/ }),
-/* 226 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6381,7 +6631,7 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !__webpack_require__(20)($nati
 });
 
 /***/ }),
-/* 227 */
+/* 229 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6395,7 +6645,7 @@ $export($export.P, 'Array', { copyWithin: __webpack_require__(106) });
 __webpack_require__(30)('copyWithin');
 
 /***/ }),
-/* 228 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6409,7 +6659,7 @@ $export($export.P, 'Array', { fill: __webpack_require__(83) });
 __webpack_require__(30)('fill');
 
 /***/ }),
-/* 229 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6432,7 +6682,7 @@ $export($export.P + $export.F * forced, 'Array', {
 __webpack_require__(30)(KEY);
 
 /***/ }),
-/* 230 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6455,7 +6705,7 @@ $export($export.P + $export.F * forced, 'Array', {
 __webpack_require__(30)(KEY);
 
 /***/ }),
-/* 231 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6464,7 +6714,7 @@ __webpack_require__(30)(KEY);
 __webpack_require__(38)('Array');
 
 /***/ }),
-/* 232 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6516,7 +6766,7 @@ if (__webpack_require__(6) && (!CORRECT_NEW || __webpack_require__(3)(function (
 __webpack_require__(38)('RegExp');
 
 /***/ }),
-/* 233 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6549,7 +6799,7 @@ if (__webpack_require__(3)(function () {
 }
 
 /***/ }),
-/* 234 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6568,7 +6818,7 @@ __webpack_require__(56)('match', 1, function (defined, MATCH, $match) {
 });
 
 /***/ }),
-/* 235 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6587,7 +6837,7 @@ __webpack_require__(56)('replace', 2, function (defined, REPLACE, $replace) {
 });
 
 /***/ }),
-/* 236 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6606,7 +6856,7 @@ __webpack_require__(56)('search', 1, function (defined, SEARCH, $search) {
 });
 
 /***/ }),
-/* 237 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6678,7 +6928,7 @@ __webpack_require__(56)('split', 2, function (defined, SPLIT, $split) {
 });
 
 /***/ }),
-/* 238 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6964,7 +7214,7 @@ $export($export.S + $export.F * !(USE_NATIVE && __webpack_require__(54)(function
 });
 
 /***/ }),
-/* 239 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6987,7 +7237,7 @@ __webpack_require__(58)(WEAK_SET, function (get) {
 }, weak, false, true);
 
 /***/ }),
-/* 240 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7040,7 +7290,7 @@ $export($export.P + $export.U + $export.F * __webpack_require__(3)(function () {
 __webpack_require__(38)(ARRAY_BUFFER);
 
 /***/ }),
-/* 241 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7052,7 +7302,7 @@ $export($export.G + $export.W + $export.F * !__webpack_require__(59).ABV, {
 });
 
 /***/ }),
-/* 242 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7065,7 +7315,7 @@ __webpack_require__(27)('Int8', 1, function (init) {
 });
 
 /***/ }),
-/* 243 */
+/* 245 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7078,7 +7328,7 @@ __webpack_require__(27)('Uint8', 1, function (init) {
 });
 
 /***/ }),
-/* 244 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7091,7 +7341,7 @@ __webpack_require__(27)('Uint8', 1, function (init) {
 }, true);
 
 /***/ }),
-/* 245 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7104,7 +7354,7 @@ __webpack_require__(27)('Int16', 2, function (init) {
 });
 
 /***/ }),
-/* 246 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7117,7 +7367,7 @@ __webpack_require__(27)('Uint16', 2, function (init) {
 });
 
 /***/ }),
-/* 247 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7130,7 +7380,7 @@ __webpack_require__(27)('Int32', 4, function (init) {
 });
 
 /***/ }),
-/* 248 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7143,7 +7393,7 @@ __webpack_require__(27)('Uint32', 4, function (init) {
 });
 
 /***/ }),
-/* 249 */
+/* 251 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7156,7 +7406,7 @@ __webpack_require__(27)('Float32', 4, function (init) {
 });
 
 /***/ }),
-/* 250 */
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7169,7 +7419,7 @@ __webpack_require__(27)('Float64', 8, function (init) {
 });
 
 /***/ }),
-/* 251 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7193,7 +7443,7 @@ $export($export.S + $export.F * !__webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 252 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7253,7 +7503,7 @@ $export($export.S + $export.F * (NEW_TARGET_BUG || ARGS_BUG), 'Reflect', {
 });
 
 /***/ }),
-/* 253 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7284,7 +7534,7 @@ $export($export.S + $export.F * __webpack_require__(3)(function () {
 });
 
 /***/ }),
-/* 254 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7303,7 +7553,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 255 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7338,7 +7588,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 256 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7363,7 +7613,7 @@ function get(target, propertyKey /* , receiver */) {
 $export($export.S, 'Reflect', { get: get });
 
 /***/ }),
-/* 257 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7381,7 +7631,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 258 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7399,7 +7649,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 259 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7415,7 +7665,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 260 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7434,7 +7684,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 261 */
+/* 263 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7446,7 +7696,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Reflect', { ownKeys: __webpack_require__(117) });
 
 /***/ }),
-/* 262 */
+/* 264 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7470,7 +7720,7 @@ $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 263 */
+/* 265 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7509,7 +7759,7 @@ function set(target, propertyKey, V /* , receiver */) {
 $export($export.S, 'Reflect', { set: set });
 
 /***/ }),
-/* 264 */
+/* 266 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7532,7 +7782,7 @@ if (setProto) $export($export.S, 'Reflect', {
 });
 
 /***/ }),
-/* 265 */
+/* 267 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7551,7 +7801,7 @@ $export($export.P, 'Array', {
 __webpack_require__(30)('includes');
 
 /***/ }),
-/* 266 */
+/* 268 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7580,7 +7830,7 @@ $export($export.P, 'Array', {
 __webpack_require__(30)('flatMap');
 
 /***/ }),
-/* 267 */
+/* 269 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7608,7 +7858,7 @@ $export($export.P, 'Array', {
 __webpack_require__(30)('flatten');
 
 /***/ }),
-/* 268 */
+/* 270 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7625,7 +7875,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 269 */
+/* 271 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7642,7 +7892,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 270 */
+/* 272 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7659,7 +7909,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 271 */
+/* 273 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7673,7 +7923,7 @@ __webpack_require__(43)('trimLeft', function ($trim) {
 }, 'trimStart');
 
 /***/ }),
-/* 272 */
+/* 274 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7687,7 +7937,7 @@ __webpack_require__(43)('trimRight', function ($trim) {
 }, 'trimEnd');
 
 /***/ }),
-/* 273 */
+/* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7724,7 +7974,7 @@ $export($export.P, 'String', {
 });
 
 /***/ }),
-/* 274 */
+/* 276 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7733,7 +7983,7 @@ $export($export.P, 'String', {
 __webpack_require__(64)('asyncIterator');
 
 /***/ }),
-/* 275 */
+/* 277 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7742,7 +7992,7 @@ __webpack_require__(64)('asyncIterator');
 __webpack_require__(64)('observable');
 
 /***/ }),
-/* 276 */
+/* 278 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7772,7 +8022,7 @@ $export($export.S, 'Object', {
 });
 
 /***/ }),
-/* 277 */
+/* 279 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7789,7 +8039,7 @@ $export($export.S, 'Object', {
 });
 
 /***/ }),
-/* 278 */
+/* 280 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7806,7 +8056,7 @@ $export($export.S, 'Object', {
 });
 
 /***/ }),
-/* 279 */
+/* 281 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7825,7 +8075,7 @@ __webpack_require__(6) && $export($export.P + __webpack_require__(60), 'Object',
 });
 
 /***/ }),
-/* 280 */
+/* 282 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7844,7 +8094,7 @@ __webpack_require__(6) && $export($export.P + __webpack_require__(60), 'Object',
 });
 
 /***/ }),
-/* 281 */
+/* 283 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7869,7 +8119,7 @@ __webpack_require__(6) && $export($export.P + __webpack_require__(60), 'Object',
 });
 
 /***/ }),
-/* 282 */
+/* 284 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7894,7 +8144,7 @@ __webpack_require__(6) && $export($export.P + __webpack_require__(60), 'Object',
 });
 
 /***/ }),
-/* 283 */
+/* 285 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7906,7 +8156,7 @@ var $export = __webpack_require__(0);
 $export($export.P + $export.R, 'Map', { toJSON: __webpack_require__(121)('Map') });
 
 /***/ }),
-/* 284 */
+/* 286 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7918,7 +8168,7 @@ var $export = __webpack_require__(0);
 $export($export.P + $export.R, 'Set', { toJSON: __webpack_require__(121)('Set') });
 
 /***/ }),
-/* 285 */
+/* 287 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7928,7 +8178,7 @@ $export($export.P + $export.R, 'Set', { toJSON: __webpack_require__(121)('Set') 
 __webpack_require__(61)('Map');
 
 /***/ }),
-/* 286 */
+/* 288 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7938,7 +8188,7 @@ __webpack_require__(61)('Map');
 __webpack_require__(61)('Set');
 
 /***/ }),
-/* 287 */
+/* 289 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7948,7 +8198,7 @@ __webpack_require__(61)('Set');
 __webpack_require__(61)('WeakMap');
 
 /***/ }),
-/* 288 */
+/* 290 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7958,7 +8208,7 @@ __webpack_require__(61)('WeakMap');
 __webpack_require__(61)('WeakSet');
 
 /***/ }),
-/* 289 */
+/* 291 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7968,7 +8218,7 @@ __webpack_require__(61)('WeakSet');
 __webpack_require__(62)('Map');
 
 /***/ }),
-/* 290 */
+/* 292 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7978,7 +8228,7 @@ __webpack_require__(62)('Map');
 __webpack_require__(62)('Set');
 
 /***/ }),
-/* 291 */
+/* 293 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7988,7 +8238,7 @@ __webpack_require__(62)('Set');
 __webpack_require__(62)('WeakMap');
 
 /***/ }),
-/* 292 */
+/* 294 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7998,7 +8248,7 @@ __webpack_require__(62)('WeakMap');
 __webpack_require__(62)('WeakSet');
 
 /***/ }),
-/* 293 */
+/* 295 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8010,7 +8260,7 @@ var $export = __webpack_require__(0);
 $export($export.G, { global: __webpack_require__(2) });
 
 /***/ }),
-/* 294 */
+/* 296 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8022,7 +8272,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'System', { global: __webpack_require__(2) });
 
 /***/ }),
-/* 295 */
+/* 297 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8039,7 +8289,7 @@ $export($export.S, 'Error', {
 });
 
 /***/ }),
-/* 296 */
+/* 298 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8055,7 +8305,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 297 */
+/* 299 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8067,7 +8317,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { DEG_PER_RAD: Math.PI / 180 });
 
 /***/ }),
-/* 298 */
+/* 300 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8084,7 +8334,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 299 */
+/* 301 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8102,7 +8352,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 300 */
+/* 302 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8121,7 +8371,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 301 */
+/* 303 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8140,7 +8390,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 302 */
+/* 304 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8164,7 +8414,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 303 */
+/* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8176,7 +8426,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { RAD_PER_DEG: 180 / Math.PI });
 
 /***/ }),
-/* 304 */
+/* 306 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8193,7 +8443,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 305 */
+/* 307 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8205,7 +8455,7 @@ var $export = __webpack_require__(0);
 $export($export.S, 'Math', { scale: __webpack_require__(123) });
 
 /***/ }),
-/* 306 */
+/* 308 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8229,7 +8479,7 @@ $export($export.S, 'Math', {
 });
 
 /***/ }),
-/* 307 */
+/* 309 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8244,7 +8494,7 @@ $export($export.S, 'Math', { signbit: function signbit(x) {
   } });
 
 /***/ }),
-/* 308 */
+/* 310 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8272,7 +8522,7 @@ $export($export.P + $export.R, 'Promise', { 'finally': function _finally(onFinal
   } });
 
 /***/ }),
-/* 309 */
+/* 311 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8291,7 +8541,7 @@ $export($export.S, 'Promise', { 'try': function _try(callbackfn) {
   } });
 
 /***/ }),
-/* 310 */
+/* 312 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8307,7 +8557,7 @@ metadata.exp({ defineMetadata: function defineMetadata(metadataKey, metadataValu
   } });
 
 /***/ }),
-/* 311 */
+/* 313 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8330,7 +8580,7 @@ metadata.exp({ deleteMetadata: function deleteMetadata(metadataKey, target /* , 
   } });
 
 /***/ }),
-/* 312 */
+/* 314 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8355,7 +8605,7 @@ metadata.exp({ getMetadata: function getMetadata(metadataKey, target /* , target
   } });
 
 /***/ }),
-/* 313 */
+/* 315 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8382,7 +8632,7 @@ metadata.exp({ getMetadataKeys: function getMetadataKeys(target /* , targetKey *
   } });
 
 /***/ }),
-/* 314 */
+/* 316 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8398,7 +8648,7 @@ metadata.exp({ getOwnMetadata: function getOwnMetadata(metadataKey, target /* , 
   } });
 
 /***/ }),
-/* 315 */
+/* 317 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8414,7 +8664,7 @@ metadata.exp({ getOwnMetadataKeys: function getOwnMetadataKeys(target /* , targe
   } });
 
 /***/ }),
-/* 316 */
+/* 318 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8438,7 +8688,7 @@ metadata.exp({ hasMetadata: function hasMetadata(metadataKey, target /* , target
   } });
 
 /***/ }),
-/* 317 */
+/* 319 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8454,7 +8704,7 @@ metadata.exp({ hasOwnMetadata: function hasOwnMetadata(metadataKey, target /* , 
   } });
 
 /***/ }),
-/* 318 */
+/* 320 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8473,7 +8723,7 @@ $metadata.exp({ metadata: function metadata(metadataKey, metadataValue) {
   } });
 
 /***/ }),
-/* 319 */
+/* 321 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8493,7 +8743,7 @@ $export($export.G, {
 });
 
 /***/ }),
-/* 320 */
+/* 322 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8709,7 +8959,7 @@ $export($export.G, { Observable: $Observable });
 __webpack_require__(38)('Observable');
 
 /***/ }),
-/* 321 */
+/* 323 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8737,7 +8987,7 @@ $export($export.G + $export.B + $export.F * MSIE, {
 });
 
 /***/ }),
-/* 322 */
+/* 324 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8751,7 +9001,7 @@ $export($export.G + $export.B, {
 });
 
 /***/ }),
-/* 323 */
+/* 325 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8819,7 +9069,7 @@ for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++
 }
 
 /***/ }),
-/* 324 */
+/* 326 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9529,10 +9779,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 // object, this seems to be the most reliable technique that does not
 // use indirect eval (which violates Content Security Policy).
 (typeof global === "undefined" ? "undefined" : _typeof(global)) === "object" ? global : (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" ? window : (typeof self === "undefined" ? "undefined" : _typeof(self)) === "object" ? self : undefined);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(89), __webpack_require__(325)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(89), __webpack_require__(327)(module)))
 
 /***/ }),
-/* 325 */
+/* 327 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9562,17 +9812,17 @@ module.exports = function (module) {
 };
 
 /***/ }),
-/* 326 */
+/* 328 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(327);
+__webpack_require__(329);
 module.exports = __webpack_require__(21).RegExp.escape;
 
 /***/ }),
-/* 327 */
+/* 329 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9580,14 +9830,14 @@ module.exports = __webpack_require__(21).RegExp.escape;
 
 // https://github.com/benjamingr/RexExp.escape
 var $export = __webpack_require__(0);
-var $re = __webpack_require__(328)(/[\\^$*+?.()|[\]{}]/g, '\\$&');
+var $re = __webpack_require__(330)(/[\\^$*+?.()|[\]{}]/g, '\\$&');
 
 $export($export.S, 'RegExp', { escape: function escape(it) {
     return $re(it);
   } });
 
 /***/ }),
-/* 328 */
+/* 330 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9603,7 +9853,7 @@ module.exports = function (regExp, replace) {
 };
 
 /***/ }),
-/* 329 */
+/* 331 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9619,10 +9869,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-// 文档结构渲染
-var render = function () {
-	function render(obj) {
-		_classCallCheck(this, render);
+// 九宫格文档结构渲染
+var Render = function () {
+	function Render(obj) {
+		_classCallCheck(this, Render);
 
 		this.container = obj.container;
 		this.data = obj.data;
@@ -9633,7 +9883,7 @@ var render = function () {
 	// 创建HTML结构
 
 
-	_createClass(render, [{
+	_createClass(Render, [{
 		key: 'bulidHTML',
 		value: function bulidHTML(data) {
 			// 生成一个随机的class
@@ -9649,16 +9899,22 @@ var render = function () {
 				if (i % 9 == 1) {
 					html += '<tr>';
 				}
+				// 判断是否需要加底边框
+				// 为了生成九宫‘格’
 				if (i % 9 == 3 || i % 9 == 6) {
 					html += '<tr class="border-bottom">';
 				}
 				// 构建该行的单元格
 				// 第二维遍历
 				for (var j = 1; j <= data[i - 1].length; j++) {
+					// 如果数据中有等于0，那么就不显示任何数据
+					var show_data = data[i - 1][j - 1] == 0 ? '' : data[i - 1][j - 1];
+					// 这里判断是否需要生成右边框
+					// 这里目的同样是为了生成九宫‘格’
 					if (j % 9 == 3 || j % 9 == 6) {
-						html += '<td class="border-right" data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + data[i - 1][j - 1] + '</td>';
+						html += '<td class="border-right" data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + show_data + '</td>';
 					} else {
-						html += '<td data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + data[i - 1][j - 1] + '</td>';
+						html += '<td data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + show_data + '</td>';
 					}
 					// 加入每行的闭合标签
 					if (j % 9 == 0) {
@@ -9723,13 +9979,13 @@ var render = function () {
 		}
 	}]);
 
-	return render;
+	return Render;
 }();
 
-exports.default = render;
+exports.default = Render;
 
 /***/ }),
-/* 330 */
+/* 332 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9738,71 +9994,455 @@ exports.default = render;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.default = {
+exports.default = undefined;
 
-	//生成一个二维数组
-	makeRow: function makeRow() {
-		var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数独库
+// 数独游戏 工厂构建
+// 这里需要实现 数独解决方案的生成  数独游戏盘的生成
 
-		var array = new Array(9);
-		array.fill(v);
-		return array;
+
+var _makeSolution = __webpack_require__(333);
+
+var _makeSolution2 = _interopRequireDefault(_makeSolution);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Shuduku = function () {
+	function Shuduku() {
+		_classCallCheck(this, Shuduku);
+
+		// 生成数独解决方案
+		var maker = new _makeSolution2.default();
+		maker.init();
+		// 储存解决方案
+		this.solutionMatrix = maker.matrix;
+	}
+
+	// 生成棋盘数独
+	// level 难度系数
+
+
+	_createClass(Shuduku, [{
+		key: 'makePuzzle',
+		value: function makePuzzle() {
+			var level = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
+
+			this.puzzleMatrix = this.solutionMatrix.map(function (row) {
+				// 前面很多地方我们使用map方法都没有加return
+				// 是因为箭头函数在执行单行代码时，默认将单行代码结果返回
+				// 而这里我们使用{}时，就必须手动return 返回值
+				return row.map(function (cell) {
+					return Math.random() * 9 < level ? 0 : cell;
+				});
+			});
+		}
+	}]);
+
+	return Shuduku;
+}();
+
+exports.default = Shuduku;
+
+/***/ }),
+/* 333 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数据生成工具
+
+// 计算工具
+
+// 检查工具
+
+
+var _matrixTool = __webpack_require__(124);
+
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
+
+var _tool = __webpack_require__(125);
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _checker = __webpack_require__(334);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// 生成数独，（随机计算出所有的格子应该填写的数字）
+var MakeSolution = function () {
+	function MakeSolution() {
+		_classCallCheck(this, MakeSolution);
+
+		// 九宫格二维数组
+		this.matrix = null;
+		// 9 * 9 索引数组表
+		this.orders = null;
+	}
+
+	_createClass(MakeSolution, [{
+		key: "init",
+		value: function init() {
+			while (!this._generator()) {
+				console.log('do it');
+			}
+		}
+	}, {
+		key: "_generator",
+		value: function _generator() {
+			// 生成9 * 9 二维数组
+			// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
+			// 及实现清空操作，理解这一点也非常重要
+			this.matrix = _matrixTool2.default.makeMatrix();
+			// 建立随机索引数组
+			// 其实这里可以理解为是matri的索引表
+			// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
+			this.orders = _matrixTool2.default.makeMatrix().map(function (row) {
+				return row.map(function (v, i) {
+					return i;
+				});
+			}).map(function (row) {
+				return _tool2.default.shuffle(row);
+			});
+
+			// 填入 1 - 9 
+			for (var n = 1; n <= 9; n++) {
+				if (!this._fillNumber(n)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}, {
+		key: "_fillNumber",
+		value: function _fillNumber(n) {
+			// 从第一行开始填写数字
+			return this._fillRow(n, 0);
+		}
+	}, {
+		key: "_fillRow",
+		value: function _fillRow(n, row_index) {
+			// 如果数字n在该行填写成功后，那么递归调用_fillRow()
+			// 进行下一行中填写数字n
+			// 最终需要将数字n，全部填入每一行，即row_index == 8
+			// 当row_index > 8 就说明数字 n 全部填入成功
+			if (row_index > 8) {
+				return true;
+			}
+
+			// 调入二维数组
+			// 这里其实就是给这个二维数值填值得过程
+			// 需要注意的是，这里的原始数组，是通过matrix类生成的
+			// 默认所有的值都为 0 ；
+			var row = this.matrix[row_index];
+
+			// 获取该行的中各元素的随机索引值，
+			// 后面将根据该索引值取值 
+			var orders = this.orders[row_index];
+
+			for (var i = 0; i < 9; i++) {
+
+				var col_index = orders[i];
+				// 如果当前行中指定的位置已经填入数值
+				// 那么跳过该位置
+				if (row[col_index] != 0) {
+					continue;
+				}
+				// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
+				if (!_checker.checkerTool.checkFillable(this.matrix, n, row_index, col_index)) {
+					continue;
+				}
+
+				row[col_index] = n;
+				// 注意这里需要将递归写进循环体内
+				// 这样作的目的，是为了确保下一行能正确填写的情况下，
+				// 那么才能确定本次填写是足够正确的
+				// 这里一是为了验证本次的填写是否能保证下一行能正确填写
+				// 同时也执行了下一行的填写，
+				// 这是一个非常巧妙的递归运用
+				if (!this._fillRow(n, row_index + 1)) {
+					row[col_index] = 0;
+					continue;
+				}
+				return true;
+			}
+			// 该函数一直返回false
+			// 除非row_index = 8
+			return false;
+		}
+	}]);
+
+	return MakeSolution;
+}();
+
+exports.default = MakeSolution;
+
+/***/ }),
+/* 334 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.Checker = exports.checkerTool = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 检查对象
+
+
+var _tool = __webpack_require__(125);
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _matrixTool = __webpack_require__(124);
+
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var checkerTool = {
+
+	// 检查数值在九宫内填写合法
+	/* matrix 九宫二维数组
+ ** n 需要填入的数值
+ ** row_index 行索引值
+ ** col_index 列索引值
+ **/
+	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+		// 按行、按列、按宫来检查数据
+		// 抽取行数据
+		var row_arr = matrix[row_index];
+		// 抽取列数据
+		var col_arr = _tool2.default.getCol(matrix, col_index);
+		// 抽取宫数据
+		var box_arr = [];
+		// 对象结构赋值
+		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
+
+		var _tool$convertPosition = _tool2.default.convertPosition(row_index, col_index),
+		    rowIndex = _tool$convertPosition.rowIndex,
+		    colIndex = _tool$convertPosition.colIndex;
+		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
+
+
+		var _matrixTool$boxMatrix = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
+		    boxValue = _matrixTool$boxMatrix.boxValue;
+
+		if (boxValue) {
+			box_arr = boxValue;
+		} else {
+			console.log('\u83B7\u53D6\u2018\u5BAB\u5185\u2019\u6570\u636E\u5931\u8D25\uFF0Cbox_obj: ' + box_obj);
+		}
+
+		for (var i = 0; i < 9; i++) {
+			if (row_arr[i] == n || col_arr[i] == n || box_arr[i] == n) {
+				return false;
+			}
+		}
+
+		return true;
 	},
-	makeMatrix: function makeMatrix() {
-		var _this = this;
 
-		var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-		// 注意这里我们为什么不采用上面的方法来生产二维数组呢？
-		/*
-  const array = new Array(9);
-  array.fill(makeRow(v));
-  return array;
-   */
-		// 如果我们按照上面方法生产一个二维数组，那么二维数组内的
-		// 所有一维数组都将指向makeRow(v)运行一次后得到的数据
-		// 这样的后果就是一旦其中一个一维数组发生变化，将导致所有的一维
-		// 数组发生变化，这不是我们所希望的
-
-		// 下面这样的做法，是每个一维数组都会通过运行makeRow()
-		// 来得到一个新的数组（这里主要就是需要理解引用类型数据的运作机制）
-		return Array.from({ length: 9 }, function () {
-			return _this.makeRow(v);
-		});
-	},
 
 	/*
- ** Fisher-Yates 费雪耶兹随机置乱算法
- **
-  */
-	shuffle: function shuffle(array) {
-		// 需要运算的次数，应该是array.length - 1
-		// 因为最后一次不需要作任何运算，所以就不需要执行
-		// 这里需要理解这种算法的特点才行
-		var endIndex = array.length - 2;
-		for (var i = 0; i <= endIndex; i++) {
-			/*
-    取得一个随机数
-    注意随机的数据必须是当前遍历到的数据的后面的数据
-    什么意思呢？
-    a = [1,2,3,4,5]
-    如果当前已经遍历到2这个数值
-    那么随机取值就必须是在2后面的数据中随机抽取
-    也就是只能在3，4，5中取得
-    下面这个_r就是这个用意
-   */
-			// Math.random() * array.length
-			// 这个取值范围就是 0 和 array.length 之间 但不包含array.length
-			var _r = i + Math.floor(Math.random() * (array.length - i));
-			// 将随机取得的值替换当前遍历的值
-			// 这里我们通过解构来赋值
-			var _ref = [array[_r], array[i]];
-			array[i] = _ref[0];
-			array[_r] = _ref[1];
+ ** 数独-检查-标记
+ ** array 一维数组
+ ** 这里我们使用的检查核心依然是一张表
+ ** 目前我们在制作数独游戏中已经有了2张数据表
+ ** 这两张数据表产生于make类
+ ** 1张是生成的数独二维数据表， 这张表将用于记录当前执行代码过程中生成的正确数独排序
+ ** 1张是生成上面的数独排序表时，我们所采用的随机序列表，通过该表来随机生成数独排序
+ ** 那么当前我们检查数组内的值是否符合数独游戏，那么需要生成一张新的表，用于记录用户
+ ** 填写的数据的正确和错误，这三张表都是一一对应的关系
+ ** checkArray就是用于组成这张表的
+ */
+	checkArray: function checkArray(array) {
+		var len = array.length;
+		// 创建检查标记数组
+		var marks = new Array(9);
+		// 标记数组初始值都为true
+		marks.fill(true);
+
+		for (var i = 0; i < len - 1; i++) {
+			var v = array[i];
+			// 如果当前位置的标记为false
+			// 那么跳过本次检查
+			if (!marks[i]) {
+				continue;
+			}
+			// 如果当前值为0 ， 那么为false
+			// 注意，这里我们需要注意，数独中没填写的空位 0 
+			if (v == 0) {
+				marks[i] = false;
+			}
+
+			for (var j = i + 1; j < len; j++) {
+				// 当数组中出现相等的值时
+				// 那么都标记为false
+				if (array[j] == v) {
+					marks[i] = marks[j] = false;
+				}
+			}
 		}
-		return array;
+
+		return marks;
 	}
 };
+
+var Checker = function () {
+	function Checker(matrix) {
+		_classCallCheck(this, Checker);
+
+		this._matrix = matrix;
+		this._matrixMarks = _matrixTool2.default.makeMatrix(true);
+	}
+
+	_createClass(Checker, [{
+		key: 'check',
+		value: function check() {
+			// 检查行
+			this.checkRow();
+			// 检查列
+			this.checkCol();
+			// 检查宫
+			this.checkBox();
+
+			// 检查整个二维数组的标记
+			// 这里需要注意数组的every()方法
+			// 这是在ES5中新增的遍历方法
+			// 常用于测试数组的所有元素是否都通过了指定函数的测试。
+			// 如果有一个返回false,那么整个函数都将返回false
+			// 如果所有为true, 那么返回true
+			// 所以用在这里就非常合适
+			this._success = this._matrixMarks.every(function (row) {
+				return row.every(function (mark) {
+					return mark;
+				});
+			});
+			return this._success;
+		}
+
+		// 标记行
+
+	}, {
+		key: 'checkRow',
+		value: function checkRow() {
+			for (var row_index = 0; row_index < 9; row_index++) {
+				// 取每一行的数组
+				var row_arr = this._matrix[row_index];
+				// 对每一行数组进行检查和标记
+				var row_marks = checkerTool.checkArray(row_arr);
+				// 将每一行的标记结果合并到matrixMarks二维数组中
+				for (var col_index = 0; col_index < row_marks.length; col_index++) {
+					// matrixMarks原始值都为true
+					// 这里如果在检查结果中有false,那么将false值写入matrixMarks对应的位置
+					if (!row_marks[col_index]) {
+						this._matrixMarks[row_index][col_index] = false;
+					}
+				}
+			}
+		}
+
+		// 标记列
+
+	}, {
+		key: 'checkCol',
+		value: function checkCol() {
+			for (var col_index = 0; col_index < 9; col_index++) {
+				// 用于存放列中的值
+				var col_arr = [];
+				// 循环去追
+				for (var row_index = 0; row_index < 9; row_index++) {
+					// 将取得的值存入col_arr
+					col_arr[row_index] = this._matrix[row_index][col_index];
+				}
+				// 检查和标记列
+				var col_marks = checkerTool.checkArray(col_arr);
+				// 将每列标记结果合并到matrixMarks中
+				for (var row_i = 0; row_i < col_marks.length; row_i++) {
+					if (!col_marks[row_i]) {
+						this._matrixMarks[row_i][col_index] = false;
+					}
+				}
+			}
+		}
+
+		// 标记宫
+
+	}, {
+		key: 'checkBox',
+		value: function checkBox() {
+			for (var i = 0; i < 9; i++) {
+				// 每个宫中第一个元素的坐标获取
+				// convertBox返回的是一个记录宫第一个元素的坐标对象
+				// 这里解构赋值
+				var _tool$convertBox = _tool2.default.convertBox(i),
+				    rowIndex = _tool$convertBox.rowIndex,
+				    colIndex = _tool$convertBox.colIndex;
+				// 这里根据宫的第一个坐标值，我们获取宫内所有的值和对应的坐标
+				// 这里返回的依然是一个对象
+				// boxValue 是一个数组，包含了当前宫内的数
+				// boxValueIndex 是一个数组，元素为对象，记录了值对应在二维数组中的索引值
+
+
+				var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
+				    boxValue = _matrixTool$boxMatrix2.boxValue,
+				    boxValueIndex = _matrixTool$boxMatrix2.boxValueIndex;
+				// 标记宫内元素
+
+
+				var box_marks = checkerTool.checkArray(boxValue);
+				// 将宫内标记结果合并到matrixMarks中
+				for (var j = 0; j < box_marks.length; j++) {
+					if (!box_marks[j]) {
+						// 当前标记为false时，找到当前值得索引
+						// 需要注意的是，标记中的顺序和宫内取得的元素是一一对应的
+						// 这里再次体现数据结构在程序中的重要性
+						// 这里建立多张相互关联的表，理清各个表（也就是二维数组）之间的关系很重要
+						var _boxValueIndex$j = boxValueIndex[j],
+						    _rowIndex = _boxValueIndex$j.rowIndex,
+						    _colIndex = _boxValueIndex$j.colIndex;
+
+						this._matrixMarks[_rowIndex][_colIndex] = false;
+					}
+				}
+			}
+		}
+	}, {
+		key: 'matrix',
+		get: function get() {
+			return this._matrix;
+		}
+	}, {
+		key: 'matrixMarks',
+		get: function get() {
+			return this._matrixMarks;
+		}
+	}, {
+		key: 'isSuccess',
+		get: function get() {
+			return this._success;
+		}
+	}]);
+
+	return Checker;
+}();
+
+exports.checkerTool = checkerTool;
+exports.Checker = Checker;
 
 /***/ })
 /******/ ]);

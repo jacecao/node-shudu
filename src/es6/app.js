@@ -1,10 +1,13 @@
 import 'babel-polyfill';
 import Render from "./ui/render.js";
-import data from './lib/matrix.js';
+import Shuduku from './core/shuduku.js';
+
+const data = new Shuduku();
+data.makePuzzle();
 
 const view = new Render({
 	container: '#container',
-	data: data.makeMatrix()
+	data: data.puzzleMatrix
 });
 
 // 初始化主视图

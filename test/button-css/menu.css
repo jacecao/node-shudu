@@ -1,0 +1,171 @@
+.buttons {
+	position: absolute;
+	left: 10rem;
+	padding: 2rem 0;
+	transform: translate3d(0, 0, 0);
+}
+
+.main-button {
+	width: 4rem;
+	height: 4rem;
+	line-height: 3.8rem;
+	border-radius: 50%;
+	background: #fff;
+	margin: 7rem auto;
+	position: relative;
+	cursor: pointer;
+	text-align: center;
+	font-size: 1.2rem;
+	font-weight: bold;
+	color: #99b977;
+	transition: 0.24s 0.2s;
+}
+
+.menu {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	top: -3rem;
+	left: -3rem;
+	border: 6rem solid transparent;
+	border-radius: 50%;
+	z-index: -1;
+	cursor: default;
+	
+	transform: scale(0);
+	transition: transform 1.4s 0.07s;
+}
+
+.in .menu {
+	transition: transform 0.4s 0.08s , z-index 0s 0.5s;
+	transform: scale(1);
+	z-index: 1;
+}
+
+.menu li {
+	position: absolute;
+	top: -5rem;
+	left: -5rem;
+	transform-origin: 3.9rem 3.9rem;
+	transition: all 0.5s 0.1s;
+}
+
+.in .menu li {
+	transition: all 0.6s;
+}
+
+.in .menu li a {
+	/* 注意这里给a元素添加浮动后，间接的设定display为block*/
+	position: absolute;
+	width: 2rem;
+	height: 2rem;
+	line-height: 2rem;
+	background: #494A5F;
+	color: #D5D6E2;
+	font-size: 1.2rem;
+	border-radius: 50%;
+	transition: 0.6s;
+}
+
+.in .menu li:nth-child(1) {
+	transition-delay: 0.02s;
+	transform: rotate(36deg);
+}
+
+.in .menu li:nth-child(1) a{
+	transition-delay: 0.04s;
+	transform: rotate(-36deg);
+}
+
+
+.in .menu li:nth-child(2) {
+	transition-delay: 0.04s;
+	transform: rotate(72deg);
+}
+
+.in .menu li:nth-child(2) a{
+	transition-delay: 0.08s;
+	transform: rotate(-72deg);
+}
+
+.in .menu li:nth-child(3) {
+	transition-delay: 0.06s;
+	transform: rotate(108deg);
+}
+
+.in .menu li:nth-child(3) a{
+	transition-delay: 0.12s;
+	transform: rotate(-108deg);
+}
+
+.in .menu li:nth-child(4) {
+	transition-delay: 0.08s;
+	transform: rotate(144deg);
+}
+
+.in .menu li:nth-child(4) a{
+	transition-delay: 0.16s;
+	transform: rotate(-144deg);
+}
+
+
+.in .menu li:nth-child(5) {
+	transition-delay: 0.1s;
+	transform: rotate(180deg);
+}
+
+.in .menu li:nth-child(5) a{
+	transition-delay: 0.2s;
+	transform: rotate(-180deg);
+}
+
+
+.in .menu li:nth-child(6) {
+	transition-delay: 0.12s;
+	transform: rotate(216deg);
+}
+
+.in .menu li:nth-child(6) a{
+	transition-delay: 0.24s;
+	transform: rotate(-216deg);
+}
+
+.in .menu li:nth-child(7) {
+	transition-delay: 0.14s;
+	transform: rotate(252deg);
+}
+
+.in .menu li:nth-child(7) a{
+	transition-delay: 0.28s;
+	transform: rotate(-252deg);
+}
+
+
+.in .menu li:nth-child(8) {
+	transition-delay: 0.16s;
+	transform: rotate(288deg);
+}
+
+.in .menu li:nth-child(8) a{
+	transition-delay: 0.32s;
+	transform: rotate(-288deg);
+}
+
+.in  .menu li:nth-child(9) {
+	transition-delay: 0.18s;
+	transform: rotate(324deg);
+}
+
+.in  .menu li:nth-child(9) a{
+	transition-delay: 0.36s;
+	transform: rotate(-324deg);
+}
+
+.in  .menu li:nth-child(10) {
+	transition-delay: 0.2s;
+}
+
+.in  .menu li:nth-child(10) a{
+	transition-delay: 0.4s;
+}

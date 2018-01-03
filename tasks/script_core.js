@@ -43,7 +43,7 @@ gulp.task('script_core', function () {
 
 
 // 测试任务
-gulp.task('test', function () {
+gulp.task('test', ['sass-test'], function () {
   return gulp.src('src/es6/test.js')
     .pipe(plumber())
     .pipe(named())
@@ -64,8 +64,6 @@ gulp.task('test', function () {
       extname: '.js'
     }))
     .pipe(sourcemaps.write('.'))
-    .pipe(gulp.dest(src.test))
-    // 刷新浏览器
-    .pipe(browserSync.reload({ stream: true }));
+    .pipe(gulp.dest(src.test));
 
 });

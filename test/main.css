@@ -1,6 +1,9 @@
 @charset "UTF-8";
 /* 请先引入 bulma CSS框架 */
 @import url(https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css);
+* {
+  outline: none; }
+
 html {
   /* 是因为在chrome浏览器中默认字体最小值为12px 
 	所以这里我们需要使得html默认字体大小为100px

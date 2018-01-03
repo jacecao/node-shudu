@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>buttons css test</title>
+		<link rel="stylesheet" href="../main.css">
+		<link rel="stylesheet" href="./menu.css">
+	</head>
+	<body>
+		<section class="buttons">
+			<button class="main-button">clear
+				<ul class="menu">
+					<li><a href="#">1</a></li>
+					<li><a href="#">2</a></li>
+					<li><a href="#">3</a></li>
+					<li><a href="#">4</a></li>
+					<li><a href="#">5</a></li>
+					<li><a href="#">6</a></li>
+					<li><a href="#">7</a></li>
+					<li><a href="#">8</a></li>
+					<li><a href="#">9</a></li>
+					<li><a href="#">M</a></li>
+				</ul>
+			</button>
+		</section>
+
+		<script>
+			var button = document.querySelector('.main-button');
+
+			button.addEventListener('click',function () {
+				this.classList.toggle('in');
+			}, false);
+		</script>
+	</body>
+</html>
