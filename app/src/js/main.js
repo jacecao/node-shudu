@@ -4243,10 +4243,17 @@ var _shuduku = __webpack_require__(332);
 
 var _shuduku2 = _interopRequireDefault(_shuduku);
 
+var _InputControl = __webpack_require__(335);
+
+var _InputControl2 = _interopRequireDefault(_InputControl);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var data = new _shuduku2.default();
+// 生成迷盘数据
 data.makePuzzle();
+
+var inputControl = new _InputControl2.default();
 
 var view = new _render2.default({
 	container: '#container',
@@ -4255,6 +4262,7 @@ var view = new _render2.default({
 
 // 初始化主视图
 view.init();
+view.bind(inputControl);
 
 // 窗口重置监听
 window.addEventListener('resize', function () {
@@ -9909,12 +9917,14 @@ var Render = function () {
 				for (var j = 1; j <= data[i - 1].length; j++) {
 					// 如果数据中有等于0，那么就不显示任何数据
 					var show_data = data[i - 1][j - 1] == 0 ? '' : data[i - 1][j - 1];
+					// 对为空的方块添加class
+					var _class2 = data[i - 1][j - 1] == 0 ? 'puzzle-cel' : '';
 					// 这里判断是否需要生成右边框
 					// 这里目的同样是为了生成九宫‘格’
 					if (j % 9 == 3 || j % 9 == 6) {
-						html += '<td class="border-right" data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + show_data + '</td>';
+						html += '<td class="border-right ' + _class2 + '" data-row="' + (i - 1) + '" data-col="' + (j - 1) + '">' + show_data + '</td>';
 					} else {
-						html += '<td data-i="' + (i - 1) + '" data-j="' + (j - 1) + '">' + show_data + '</td>';
+						html += '<td class="' + _class2 + '" data-row="' + (i - 1) + '" data-col="' + (j - 1) + '">' + show_data + '</td>';
 					}
 					// 加入每行的闭合标签
 					if (j % 9 == 0) {
@@ -9976,6 +9986,39 @@ var Render = function () {
 			var data = this.data;
 			this.renderHTML(ele, data);
 			this.resize();
+		}
+
+		// 输入按钮触发绑定
+
+	}, {
+		key: 'bind',
+		value: function bind(inputControl) {
+			// 如果表格已经生成
+			if (this.render) {
+				var table = document.querySelector(this.table);
+				table.addEventListener('click', function (e) {
+					var target = e.target;
+					// 只有为空的表格才能触发输入数组
+					if (target.classList.contains('puzzle-cel')) {
+						// 获取当前表格的数据索引
+						var row = parseInt(target.dataset.row);
+						var col = parseInt(target.dataset.col);
+						console.log(row, col);
+						// 操作数字输入轮盘
+						inputControl.position(target);
+						// 如果数字输入轮盘中有值
+						// 表示有数据输入
+						// 那么更改this.data数据
+						// console.log(this.data);
+						// if (inputControl.value) {
+						// 	this.data[row][col] = parseInt(inputControl.value);
+						// }
+						// console.log(this.data);
+					}
+				}, false);
+			} else {
+				console.log('the table not exist');
+			}
 		}
 	}]);
 
@@ -10443,6 +10486,156 @@ var Checker = function () {
 
 exports.checkerTool = checkerTool;
 exports.Checker = Checker;
+
+/***/ }),
+/* 335 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// 输入框元素的操作
+// 注意这里我们使用了HTML5新增的API
+// classList 、 dataset
+// 都是新增的DOM操作API
+// 低版本浏览器不支持，如果使用低版本浏览器打开本应用就会出错
+var InputControl = function () {
+	function InputControl() {
+		var event = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "click";
+
+		_classCallCheck(this, InputControl);
+
+		// 保存输入按钮组
+		this._input_ele = document.querySelector('#input-buttons');
+		// 用于储存当前触发目标元素
+		this._target = null;
+		// 用于储存输入按钮组尺寸
+		this._input_ele_size = null;
+		// 保存输入按钮触发事件类型，默认为click
+		this._e = event;
+		// 保存输入值
+		this.value = null;
+		// 输入按钮是否显示
+		this.isOpen = false;
+		// 添加默认事件监听
+		this.eventHandler();
+	}
+
+	_createClass(InputControl, [{
+		key: 'position',
+
+		// 获取输入按钮的定位并显示
+		value: function position(target_ele) {
+			if (this.isOpen) {
+				this._input_ele.classList.remove('in');
+			}
+			// 将输入按钮组diaplay设为block
+			// opacity 依然为0
+			// 这样做的目的是为了执行_getClientSize()
+			// 只有元素display非none时，我们才能获取其尺寸
+			this._input_ele.classList.add('show');
+			// 储存当前目标元素
+			this._target = target_ele;
+			// 获取目标点当前文档高度
+			var _top = target_ele.offsetTop;
+			// 获取目标点当前文档左边距
+			var _left = target_ele.offsetLeft;
+			// 获取目标点自己的大小（注 意这里目标值就是每个单元格，而每个单元格是等宽等高的）
+			// 所以这里我们仅仅取一个值即可
+			var target_width = target_ele.clientWidth;
+			var target_height = target_ele.clientHeight;
+			// 这里我们需要获取按钮组尺寸大小（按钮组大小是固定）
+			// 这里我们做一个判断，判断当前对象是否保存了输入按钮组大小
+			// 如果没有我们就取值，如果有就不再重复取值
+			if (!this._input_ele_size) {
+				this._input_ele_size = this._getClientSize;
+			}
+			var _ele_size = this._input_ele_size;
+			// console.log(target_width, target_height);
+			// 注意这里需要理解left和top的定位计算方式
+			// 我们需要将输入按钮的中心点与当前目标点的中心重合
+			// 这里建议画图理解这个关系
+			var x = _left - (_ele_size.width - target_width) / 2;
+			var y = _top - (_ele_size.height - target_height) / 2;
+
+			this._input_ele.style.left = x + 'px';
+			this._input_ele.style.top = y + 'px';
+			// console.log(x, y);
+			// 加入动画并显现元素
+			this._input_ele.classList.add('in');
+			this.isOpen = true;
+		}
+	}, {
+		key: 'hide',
+		value: function hide() {
+			var _this = this;
+
+			// 隐藏输入按钮组
+			this._input_ele.classList.remove('in');
+			window.setTimeout(function () {
+				return _this._input_ele.classList.remove('show');
+			}, 400);
+		}
+	}, {
+		key: 'eventHandler',
+		value: function eventHandler() {
+			var _this2 = this;
+
+			this._input_ele.addEventListener(this._e, function (e) {
+				var input_button = e.target;
+				// console.log(input_button);
+				var input_data = input_button.dataset.value;
+				// console.log(input_data);
+				// 点击清空
+				if (input_data == 0) {
+					_this2._target.innerHTML = '';
+					_this2._target.style.background = 'inherit';
+					_this2.value = '0';
+					_this2.hide();
+				} else if (input_data == 'm') {
+					// 点击标记按钮
+					// 如果标记已经存在那么就取消标记
+					if (_this2._target.dataset.mark) {
+						_this2._target.style.background = 'inherit';
+						_this2._target.dataset.mark = '';
+					} else {
+						// 如果没有别标记那么添加标记
+						_this2._target.style.background = '#ffdd57';
+						_this2._target.dataset.mark = 'true';
+					}
+					_this2.value = false;
+					_this2.hide();
+				} else if (input_data) {
+					// 点击是数字
+					_this2._target.innerHTML = input_data;
+					_this2.value = input_data;
+					_this2.hide();
+				}
+			}, false);
+		}
+	}, {
+		key: '_getClientSize',
+		get: function get() {
+			// 获取输入组按钮尺寸
+			return {
+				width: this._input_ele.clientWidth,
+				height: this._input_ele.clientHeight
+			};
+		}
+	}]);
+
+	return InputControl;
+}();
+
+exports.default = InputControl;
 
 /***/ })
 /******/ ]);

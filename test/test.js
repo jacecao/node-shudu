@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -320,147 +320,6 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.default = undefined;
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数据生成工具
-
-// 计算工具
-
-// 检查工具
-
-
-var _matrixTool = __webpack_require__(0);
-
-var _matrixTool2 = _interopRequireDefault(_matrixTool);
-
-var _tool = __webpack_require__(1);
-
-var _tool2 = _interopRequireDefault(_tool);
-
-var _checker = __webpack_require__(3);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-// 生成数独，（随机计算出所有的格子应该填写的数字）
-var MakeSolution = function () {
-	function MakeSolution() {
-		_classCallCheck(this, MakeSolution);
-
-		// 九宫格二维数组
-		this.matrix = null;
-		// 9 * 9 索引数组表
-		this.orders = null;
-	}
-
-	_createClass(MakeSolution, [{
-		key: "init",
-		value: function init() {
-			while (!this._generator()) {
-				console.log('do it');
-			}
-		}
-	}, {
-		key: "_generator",
-		value: function _generator() {
-			// 生成9 * 9 二维数组
-			// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
-			// 及实现清空操作，理解这一点也非常重要
-			this.matrix = _matrixTool2.default.makeMatrix();
-			// 建立随机索引数组
-			// 其实这里可以理解为是matri的索引表
-			// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
-			this.orders = _matrixTool2.default.makeMatrix().map(function (row) {
-				return row.map(function (v, i) {
-					return i;
-				});
-			}).map(function (row) {
-				return _tool2.default.shuffle(row);
-			});
-
-			// 填入 1 - 9 
-			for (var n = 1; n <= 9; n++) {
-				if (!this._fillNumber(n)) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}, {
-		key: "_fillNumber",
-		value: function _fillNumber(n) {
-			// 从第一行开始填写数字
-			return this._fillRow(n, 0);
-		}
-	}, {
-		key: "_fillRow",
-		value: function _fillRow(n, row_index) {
-			// 如果数字n在该行填写成功后，那么递归调用_fillRow()
-			// 进行下一行中填写数字n
-			// 最终需要将数字n，全部填入每一行，即row_index == 8
-			// 当row_index > 8 就说明数字 n 全部填入成功
-			if (row_index > 8) {
-				return true;
-			}
-
-			// 调入二维数组
-			// 这里其实就是给这个二维数值填值得过程
-			// 需要注意的是，这里的原始数组，是通过matrix类生成的
-			// 默认所有的值都为 0 ；
-			var row = this.matrix[row_index];
-
-			// 获取该行的中各元素的随机索引值，
-			// 后面将根据该索引值取值 
-			var orders = this.orders[row_index];
-
-			for (var i = 0; i < 9; i++) {
-
-				var col_index = orders[i];
-				// 如果当前行中指定的位置已经填入数值
-				// 那么跳过该位置
-				if (row[col_index] != 0) {
-					continue;
-				}
-				// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
-				if (!_checker.checkerTool.checkFillable(this.matrix, n, row_index, col_index)) {
-					continue;
-				}
-
-				row[col_index] = n;
-				// 注意这里需要将递归写进循环体内
-				// 这样作的目的，是为了确保下一行能正确填写的情况下，
-				// 那么才能确定本次填写是足够正确的
-				// 这里一是为了验证本次的填写是否能保证下一行能正确填写
-				// 同时也执行了下一行的填写，
-				// 这是一个非常巧妙的递归运用
-				if (!this._fillRow(n, row_index + 1)) {
-					row[col_index] = 0;
-					continue;
-				}
-				return true;
-			}
-			// 该函数一直返回false
-			// 除非row_index = 8
-			return false;
-		}
-	}]);
-
-	return MakeSolution;
-}();
-
-exports.default = MakeSolution;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
 exports.Checker = exports.checkerTool = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 检查对象
@@ -710,14 +569,14 @@ exports.checkerTool = checkerTool;
 exports.Checker = Checker;
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(5);
+module.exports = __webpack_require__(4);
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -731,19 +590,20 @@ var _tool = __webpack_require__(1);
 
 var _tool2 = _interopRequireDefault(_tool);
 
-var _makeSolution = __webpack_require__(2);
+var _makeSolution = __webpack_require__(5);
 
 var _makeSolution2 = _interopRequireDefault(_makeSolution);
 
-var _checker = __webpack_require__(3);
+var _checker = __webpack_require__(2);
 
-var _shuduku = __webpack_require__(6);
+var _inputButton = __webpack_require__(6);
 
-var _shuduku2 = _interopRequireDefault(_shuduku);
+var _inputButton2 = _interopRequireDefault(_inputButton);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var shudu = new _shuduku2.default();
+// 输入元素定位测试
+var target = document.querySelector('.target');
 
 // 工具测试
 
@@ -806,11 +666,163 @@ console.log(checker2.matrixMarks);
 console.log(checker2.isSuccess);
 */
 
-// export default {name: 'test'}
+/*
+import Shuduku from './core/shuduku.js';
 
+const shudu = new Shuduku();
 shudu.makePuzzle();
 console.log(shudu.solutionMatrix);
 console.log(shudu.puzzleMatrix);
+*/
+
+// export default {name: 'test'}
+
+var buttons = new _inputButton2.default();
+
+target.addEventListener('click', function (e) {
+	buttons.position(this);
+}, false);
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports.default = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数据生成工具
+
+// 计算工具
+
+// 检查工具
+
+
+var _matrixTool = __webpack_require__(0);
+
+var _matrixTool2 = _interopRequireDefault(_matrixTool);
+
+var _tool = __webpack_require__(1);
+
+var _tool2 = _interopRequireDefault(_tool);
+
+var _checker = __webpack_require__(2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// 生成数独，（随机计算出所有的格子应该填写的数字）
+var MakeSolution = function () {
+	function MakeSolution() {
+		_classCallCheck(this, MakeSolution);
+
+		// 九宫格二维数组
+		this.matrix = null;
+		// 9 * 9 索引数组表
+		this.orders = null;
+	}
+
+	_createClass(MakeSolution, [{
+		key: "init",
+		value: function init() {
+			while (!this._generator()) {
+				console.log('do it');
+			}
+		}
+	}, {
+		key: "_generator",
+		value: function _generator() {
+			// 生成9 * 9 二维数组
+			// 这里需要注意的是，每当数独生成失败就需要重置这个二维数组
+			// 及实现清空操作，理解这一点也非常重要
+			this.matrix = _matrixTool2.default.makeMatrix();
+			// 建立随机索引数组
+			// 其实这里可以理解为是matri的索引表
+			// 这个索引只是被打乱了，使得后面能在matrix中得到一个随机值
+			this.orders = _matrixTool2.default.makeMatrix().map(function (row) {
+				return row.map(function (v, i) {
+					return i;
+				});
+			}).map(function (row) {
+				return _tool2.default.shuffle(row);
+			});
+
+			// 填入 1 - 9 
+			for (var n = 1; n <= 9; n++) {
+				if (!this._fillNumber(n)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}, {
+		key: "_fillNumber",
+		value: function _fillNumber(n) {
+			// 从第一行开始填写数字
+			return this._fillRow(n, 0);
+		}
+	}, {
+		key: "_fillRow",
+		value: function _fillRow(n, row_index) {
+			// 如果数字n在该行填写成功后，那么递归调用_fillRow()
+			// 进行下一行中填写数字n
+			// 最终需要将数字n，全部填入每一行，即row_index == 8
+			// 当row_index > 8 就说明数字 n 全部填入成功
+			if (row_index > 8) {
+				return true;
+			}
+
+			// 调入二维数组
+			// 这里其实就是给这个二维数值填值得过程
+			// 需要注意的是，这里的原始数组，是通过matrix类生成的
+			// 默认所有的值都为 0 ；
+			var row = this.matrix[row_index];
+
+			// 获取该行的中各元素的随机索引值，
+			// 后面将根据该索引值取值 
+			var orders = this.orders[row_index];
+
+			for (var i = 0; i < 9; i++) {
+
+				var col_index = orders[i];
+				// 如果当前行中指定的位置已经填入数值
+				// 那么跳过该位置
+				if (row[col_index] != 0) {
+					continue;
+				}
+				// 检查这个位置在‘列’ ‘行’和当前‘宫’中是否能填写
+				if (!_checker.checkerTool.checkFillable(this.matrix, n, row_index, col_index)) {
+					continue;
+				}
+
+				row[col_index] = n;
+				// 注意这里需要将递归写进循环体内
+				// 这样作的目的，是为了确保下一行能正确填写的情况下，
+				// 那么才能确定本次填写是足够正确的
+				// 这里一是为了验证本次的填写是否能保证下一行能正确填写
+				// 同时也执行了下一行的填写，
+				// 这是一个非常巧妙的递归运用
+				if (!this._fillRow(n, row_index + 1)) {
+					row[col_index] = 0;
+					continue;
+				}
+				return true;
+			}
+			// 该函数一直返回false
+			// 除非row_index = 8
+			return false;
+		}
+	}]);
+
+	return MakeSolution;
+}();
+
+exports.default = MakeSolution;
 
 /***/ }),
 /* 6 */
@@ -822,56 +834,105 @@ console.log(shudu.puzzleMatrix);
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.default = undefined;
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 数独库
-// 数独游戏 工厂构建
-// 这里需要实现 数独解决方案的生成  数独游戏盘的生成
-
-
-var _makeSolution = __webpack_require__(2);
-
-var _makeSolution2 = _interopRequireDefault(_makeSolution);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Shuduku = function () {
-	function Shuduku() {
-		_classCallCheck(this, Shuduku);
+// 输入框元素的操作
+var InputButton = function () {
+	function InputButton() {
+		var event = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "click";
 
-		// 生成数独解决方案
-		var maker = new _makeSolution2.default();
-		maker.init();
-		// 储存解决方案
-		this.solutionMatrix = maker.matrix;
+		_classCallCheck(this, InputButton);
+
+		this._input_ele = document.querySelector('#input-buttons');
+		this._target = null;
+		this._e = event;
+		this.eventHandler();
 	}
 
-	// 生成棋盘数独
-	// level 难度系数
+	_createClass(InputButton, [{
+		key: 'position',
 
+		// 获取输入按钮的定位并显示
+		value: function position(target_ele) {
+			this._input_ele.classList.add('show');
+			// 储存当前目标元素
+			this._target = target_ele;
+			// 获取目标点当前文档高度
+			var _top = target_ele.offsetTop;
+			// console.log(_top);
+			// 获取目标点当前文档左边距
+			var _left = target_ele.offsetLeft;
+			// console.log(_left);
+			// 获取目标点自己的大小（注 意这里目标值就是每个单元格，而每个单元格是等宽等高的）
+			// 所以这里我们仅仅取一个值即可
+			var target_width = target_ele.clientWidth;
+			var target_height = target_ele.clientHeight;
+			// console.log(target_width, target_height);
+			// 注意这里需要理解left和top的定位计算方式
+			// 我们需要将输入按钮的中心点与当前目标点的中心重合
+			// 这里建议画图理解这个关系
+			var _ele_size = this._getClientSize;
+			var x = _left - (_ele_size.width - target_width) / 2;
+			var y = _top - (_ele_size.height - target_height) / 2;
 
-	_createClass(Shuduku, [{
-		key: 'makePuzzle',
-		value: function makePuzzle() {
-			var level = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
+			this._input_ele.style.left = x + 'px';
+			this._input_ele.style.top = y + 'px';
+			// 加入动画并显现元素
+			this._input_ele.classList.add('in');
+		}
+	}, {
+		key: 'hide',
+		value: function hide() {
+			var _this = this;
 
-			this.puzzleMatrix = this.solutionMatrix.map(function (row) {
-				// 前面很多地方我们使用map方法都没有加return
-				// 是因为箭头函数在执行单行代码时，默认将单行代码结果返回
-				// 而这里我们使用{}时，就必须手动return 返回值
-				return row.map(function (cell) {
-					return Math.random() * 9 < level ? 0 : cell;
-				});
-			});
+			this._input_ele.classList.remove('in');
+			window.setTimeout(function () {
+				return _this._input_ele.classList.remove('show');
+			}, 300);
+		}
+	}, {
+		key: 'eventHandler',
+		value: function eventHandler() {
+			var _this2 = this;
+
+			this._input_ele.addEventListener(this._e, function (e) {
+				var input_button = e.target;
+				console.log(input_button);
+				var input_data = input_button.dataset.value;
+				console.log(input_data);
+				// 点击清空
+				if (input_data == 0) {
+					_this2._target.innerHTML = '';
+					_this2._target.style.background = 'inherit';
+					_this2.hide();
+				} else if (input_data == 'm') {
+					_this2._target.style.background = '#ffdd57';
+					_this2.hide();
+				} else if (input_data) {
+					// 点击是数字
+					_this2._target.innerHTML = input_data;
+					_this2.hide();
+				}
+			}, false);
+		}
+	}, {
+		key: '_getClientSize',
+		get: function get() {
+			// 第一步需要显示按钮
+			return {
+				width: this._input_ele.clientWidth,
+				height: this._input_ele.clientHeight
+			};
 		}
 	}]);
 
-	return Shuduku;
+	return InputButton;
 }();
 
-exports.default = Shuduku;
+exports.default = InputButton;
 
 /***/ })
 /******/ ]);

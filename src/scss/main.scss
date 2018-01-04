@@ -1,16 +1,5 @@
-/* 请先引入 bulma CSS框架 */
-@import url(https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css);
-
-* {outline: none;}
-
-html {
-	/* 是因为在chrome浏览器中默认字体最小值为12px 
-	所以这里我们需要使得html默认字体大小为100px
-	(注意这里的比例依然是指浏览器默认初始字体大小为16px)
-	*/
-	font-size: 62.5%;
-	color: #222;
-}
+@import "./_reset.scss";
+@import "./_buttons.scss";
 
 h1.title {
 	padding: 1rem;
@@ -18,20 +7,14 @@ h1.title {
 	color: #fff;
 }
 
-body {
-	margin: 0;
-	padding: 0;
-	user-select: none;
-	max-width: 45rem;
-	>* {
-		max-width: 45rem;
-	}
-}
-
 .container {
-	width: 90%;
-	margin-top: 5rem;
+	width: 80%;
+	margin: 2rem auto;
 	box-shadow: 0 0 0.5rem rgba(22,22,22,0.4);
+
+	.table {
+		margin-bottom: 0;
+	}
 
 	.table td, .table th {
 		vertical-align: middle;
@@ -51,13 +34,14 @@ body {
 		border-bottom-width: 0.2rem;
 		border-bottom-color: #01d1d1;
 	}
+	.puzzle-cel {
+		color: #ff3860;
+		font-weight: bold;
+		text-shadow: 0 0 0.2rem #483490;
+	}
 }
 
-
 .dashboard {
-	position: absolute;
-	bottom: 0;
-	left: 0;
 	width: 100%;
 	.buttons {
 		justify-content: center;

@@ -70,12 +70,24 @@ console.log(checker2.matrixMarks);
 console.log(checker2.isSuccess);
 */
 
+/*
 import Shuduku from './core/shuduku.js';
 
 const shudu = new Shuduku();
 shudu.makePuzzle();
 console.log(shudu.solutionMatrix);
 console.log(shudu.puzzleMatrix);
+*/
+
+import InputControl from './ui/inputControl.js';
+// 输入元素定位测试
+const target = document.querySelector('.target');
+const buttons = new InputControl();
+
+target.addEventListener('click', function (e) {
+	buttons.position(this);
+}, false);
+
 
 
 

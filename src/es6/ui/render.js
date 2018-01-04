@@ -33,12 +33,14 @@ export default class Render {
 			for (let j = 1; j <= data[i-1].length; j++) {
 				// 如果数据中有等于0，那么就不显示任何数据
 				let show_data = data[i-1][j-1] == 0 ? '' : data[i-1][j-1];
+				// 对为空的方块添加class
+				let _class = data[i-1][j-1] == 0 ? 'puzzle-cel' : '';
 				// 这里判断是否需要生成右边框
 				// 这里目的同样是为了生成九宫‘格’
 				if (j % 9 == 3 || j % 9 == 6) {
-					html += `<td class="border-right" data-i="${i-1}" data-j="${j - 1}">${show_data}</td>`;
+					html += `<td class="border-right ${_class}" data-row="${i-1}" data-col="${j - 1}">${show_data}</td>`;
 				} else {
-					html += `<td data-i="${i-1}" data-j="${j - 1}">${show_data}</td>`;
+					html += `<td class="${_class}" data-row="${i-1}" data-col="${j - 1}">${show_data}</td>`;
 				}
 				// 加入每行的闭合标签
 				if (j % 9 == 0) {
@@ -97,4 +99,33 @@ export default class Render {
 		this.resize();
 	}
 
+	// 输入按钮触发绑定
+	bind (inputControl) {
+		// 如果表格已经生成
+		if (this.render) {
+			const table = document.querySelector(this.table);
+			table.addEventListener('click' , (e) => {
+				let target = e.target;
+				// 只有为空的表格才能触发输入数组
+				if (target.classList.contains('puzzle-cel')) {
+					// 获取当前表格的数据索引
+					let row = parseInt(target.dataset.row);
+					let col = parseInt(target.dataset.col);
+					console.log(row, col);
+					// 操作数字输入轮盘
+					inputControl.position(target);
+					// 如果数字输入轮盘中有值
+					// 表示有数据输入
+					// 那么更改this.data数据
+					// console.log(this.data);
+					// if (inputControl.value) {
+					// 	this.data[row][col] = parseInt(inputControl.value);
+					// }
+					// console.log(this.data);
+				}
+			}, false);
+		} else {
+			console.log('the table not exist');
+		}
+	}
 }

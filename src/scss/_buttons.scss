@@ -1,3 +1,7 @@
+/*
+	数字轮盘按钮CSS
+ */
+
 .input-buttons {
 	display: none;
 	position: absolute;
@@ -9,19 +13,18 @@
 .show {
 	display: block;
 }
-
 .in {
 	opacity: 1;
 }
 
 .main-button {
+	position: relative;
 	width: 4rem;
 	height: 4rem;
 	line-height: 3.8rem;
 	border-radius: 50%;
 	background: #fff;
-	margin: 7rem auto;
-	position: relative;
+	box-shadow: 0 0 2px 2px #e1e4dc;
 	cursor: pointer;
 	text-align: center;
 	font-size: 1.2rem;
@@ -35,30 +38,31 @@
 	padding: 0;
 	margin: 0;
 	position: absolute;
-	top: -3rem;
-	left: -3rem;
+	top: -4rem;
+	left: -4rem;
 	border: 6rem solid transparent;
 	border-radius: 50%;
 	z-index: -1;
-	cursor: default;
+	cursor: pointer;
 	
 	transform: scale(0);
 	transition: transform 1.4s 0.07s;
 }
 
+.menu li {
+	position: absolute;
+	top: -4rem;
+	left: -4rem;
+	transform-origin: 4rem 4rem;
+	transition: all 0.5s 0.1s;
+}
+
 .in .menu {
 	transition: transform 0.4s 0.08s , z-index 0s 0.5s;
 	transform: scale(1);
-	z-index: 1;
+	/*z-index: 1;*/
 }
 
-.menu li {
-	position: absolute;
-	top: -5rem;
-	left: -5rem;
-	transform-origin: 3.9rem 3.9rem;
-	transition: all 0.5s 0.1s;
-}
 
 .in .menu li {
 	transition: all 0.6s;
@@ -75,6 +79,7 @@
 	font-size: 1.2rem;
 	border-radius: 50%;
 	transition: 0.6s;
+	box-shadow: 0 0 2px 2px #e1e4dc;
 }
 
 .in .menu li:nth-child(1) {
