@@ -4,6 +4,70 @@ import matrixTool from './matrixTool.js';
 
 const checkerTool = {
 	
+	// todo 检查重复按钮
+	// 注意这里只是检查当前你填的这个数字是否合理
+	checkRepeat (matrix, row_index, col_index) {
+		// 获取当前索引位置的值
+		const n = matrix[row_index][col_index];
+		// 储存有重复的数据索引
+		let repeatIndex = [];
+		// 按行、按列、按宫来检查数据
+		// 抽取行数据
+		let row_arr = matrix[row_index];
+		// 抽取列数据
+		let col_arr = tool.getCol(matrix, col_index);
+		// 抽取宫数据
+		let box_arr = [];
+		// 对象结构赋值
+		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
+		const {rowIndex, colIndex} = tool.convertPosition(row_index, col_index);
+		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
+		const {boxValue, boxValueIndex} = matrixTool.boxMatrix(matrix, rowIndex, colIndex);
+		
+		if (boxValue) {
+			box_arr = boxValue;
+		} else {
+			console.log(`获取‘宫内’数据失败，box_obj: ${box_obj}`);
+			return;
+		}
+
+		for (let i = 0; i < 9; i++) {
+			/*
+			* 这里如果怕重复取得当前索引
+			* 还有一个方法就是使用map结构来储存索引值
+			* 但为了明白其执行过程，这里我们就使用最原始的判断方法
+			 */
+			// 检查行数组
+			// 获取非当前索引且值相等的情况
+			if (row_arr[i] == n && i != col_index) {
+
+				repeatIndex.push({row: row_index, col: i});
+				// 检查列
+				// 获取非当前索引且值相等的情况
+			}else if (col_arr[i] == n && i != row_index) {
+
+				repeatIndex.push({row: i, col: col_index});
+
+			}else if (box_arr[i] == n) {
+
+				let {rowIndex, colIndex} = boxValueIndex[i];
+				// 同上，检查当前索引宫内的值
+				if (rowIndex!= row_index && colIndex != col_index ) {
+					repeatIndex.push({row: rowIndex, col: colIndex});
+				}
+
+			}
+		}
+
+		// 若重置索引组不为空，则加入当前索引值
+		if (repeatIndex.length > 0) {
+			repeatIndex.push({row: row_index, col: col_index});
+		}
+
+		// 返货重复索引组
+		return repeatIndex;
+	},
+
 	// 检查数值在九宫内填写合法
 	/* matrix 九宫二维数组
 	** n 需要填入的数值

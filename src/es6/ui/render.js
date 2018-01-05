@@ -34,7 +34,9 @@ export default class Render {
 				// 如果数据中有等于0，那么就不显示任何数据
 				let show_data = data[i-1][j-1] == 0 ? '' : data[i-1][j-1];
 				// 对为空的方块添加class
-				let _class = data[i-1][j-1] == 0 ? 'puzzle-cel' : '';
+				// 注意这里我们对值为空的格子添加一个特殊的class
+				// index_xx 这个class用于方便标记有错误的数据
+				let _class = data[i-1][j-1] == 0 ? `puzzle-cel index_${i-1}${j-1}` : `index_${i-1}${j-1}`;
 				// 这里判断是否需要生成右边框
 				// 这里目的同样是为了生成九宫‘格’
 				if (j % 9 == 3 || j % 9 == 6) {

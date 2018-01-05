@@ -89,6 +89,7 @@ export default class InputControl {
 				this._target.style.background = 'inherit';
 				this.value = '0';
 				this.hide();
+				return;
 			} else if (input_data == 'm') {
 				// 点击标记按钮
 				// 如果标记已经存在那么就取消标记
@@ -102,11 +103,13 @@ export default class InputControl {
 				}
 				this.value = false;
 				this.hide();
-			} else if (input_data) {
+				return;
+			} else {
 				// 点击是数字
 				this._target.innerHTML = input_data;
 				this.value = input_data;
 				this.hide();
+				return;
 			}
 		}, false);
 	}

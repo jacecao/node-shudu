@@ -69,25 +69,34 @@ console.log(checker.matrix);
 console.log(checker2.matrixMarks);
 console.log(checker2.isSuccess);
 */
+const maker = new MakeSolution();
+maker.init();
+const matrix_arr = maker.matrix;
+let n = matrix_arr[3][6];
+matrix_arr[8][6] = matrix_arr[3][6];
+let result = checkerTool.checkRepeat(matrix_arr, 4, 6);
+console.log(result);
 
-/*
-import Shuduku from './core/shuduku.js';
 
-const shudu = new Shuduku();
-shudu.makePuzzle();
-console.log(shudu.solutionMatrix);
-console.log(shudu.puzzleMatrix);
-*/
+// import Shuduku from './core/shuduku.js';
+
+// const shudu = new Shuduku();
+// shudu.makePuzzle();
+// console.log(shudu.solutionMatrix);
+// console.log(shudu.puzzleMatrix);
+// for (let [key,value] of shudu.puzzleMap.entries()) {
+// 	console.log(key,value);
+// }
+
 
 import InputControl from './ui/inputControl.js';
 // 输入元素定位测试
 const target = document.querySelector('.target');
-const buttons = new InputControl();
+// const buttons = new InputControl();
 
-target.addEventListener('click', function (e) {
-	buttons.position(this);
-}, false);
-
+// target.addEventListener('click', function (e) {
+// 	buttons.position(this);
+// }, false);
 
 
 

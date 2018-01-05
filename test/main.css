@@ -197,6 +197,10 @@ h1.title {
     border-bottom-style: solid;
     border-bottom-width: 0.2rem;
     border-bottom-color: #01d1d1; }
+  .container .puzzle-cel {
+    color: #ff3860;
+    font-weight: bold;
+    text-shadow: 0 0 0.2rem #483490; }
 
 .dashboard {
   width: 100%; }

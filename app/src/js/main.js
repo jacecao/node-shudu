@@ -9918,7 +9918,9 @@ var Render = function () {
 					// 如果数据中有等于0，那么就不显示任何数据
 					var show_data = data[i - 1][j - 1] == 0 ? '' : data[i - 1][j - 1];
 					// 对为空的方块添加class
-					var _class2 = data[i - 1][j - 1] == 0 ? 'puzzle-cel' : '';
+					// 注意这里我们对值为空的格子添加一个特殊的class
+					// index_xx 这个class用于方便标记有错误的数据
+					var _class2 = data[i - 1][j - 1] == 0 ? 'puzzle-cel index_' + (i - 1) + (j - 1) : 'index_' + (i - 1) + (j - 1);
 					// 这里判断是否需要生成右边框
 					// 这里目的同样是为了生成九宫‘格’
 					if (j % 9 == 3 || j % 9 == 6) {
@@ -10061,6 +10063,12 @@ var Shuduku = function () {
 		maker.init();
 		// 储存解决方案
 		this.solutionMatrix = maker.matrix;
+
+		/* 这样做的目的是方便后期检查 */
+		// 储存被重置的数组
+		// 这里我们使用map结构
+		// 索引组成id => value
+		this.puzzleMap = new Map();
 	}
 
 	// 生成棋盘数独
@@ -10070,14 +10078,21 @@ var Shuduku = function () {
 	_createClass(Shuduku, [{
 		key: 'makePuzzle',
 		value: function makePuzzle() {
+			var _this = this;
+
 			var level = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
 
-			this.puzzleMatrix = this.solutionMatrix.map(function (row) {
+			this.puzzleMatrix = this.solutionMatrix.map(function (row, rowIndex) {
 				// 前面很多地方我们使用map方法都没有加return
 				// 是因为箭头函数在执行单行代码时，默认将单行代码结果返回
 				// 而这里我们使用{}时，就必须手动return 返回值
-				return row.map(function (cell) {
-					return Math.random() * 9 < level ? 0 : cell;
+				return row.map(function (cell, colIndex) {
+					if (Math.random() * 9 < level) {
+						_this.puzzleMap.set('' + rowIndex + colIndex, cell);
+						return 0;
+					} else {
+						return cell;
+					}
 				});
 			});
 		}
@@ -10258,13 +10273,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var checkerTool = {
 
-	// 检查数值在九宫内填写合法
-	/* matrix 九宫二维数组
- ** n 需要填入的数值
- ** row_index 行索引值
- ** col_index 列索引值
- **/
-	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+	// todo 检查重复按钮
+	// 注意这里只是检查当前你填的这个数字是否合理
+	checkRepeat: function checkRepeat(matrix, row_index, col_index) {
+		// 获取当前索引位置的值
+		var n = matrix[row_index][col_index];
+		// 储存有重复的数据索引
+		var repeatIndex = [];
 		// 按行、按列、按宫来检查数据
 		// 抽取行数据
 		var row_arr = matrix[row_index];
@@ -10282,7 +10297,79 @@ var checkerTool = {
 
 
 		var _matrixTool$boxMatrix = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
-		    boxValue = _matrixTool$boxMatrix.boxValue;
+		    boxValue = _matrixTool$boxMatrix.boxValue,
+		    boxValueIndex = _matrixTool$boxMatrix.boxValueIndex;
+
+		if (boxValue) {
+			box_arr = boxValue;
+		} else {
+			console.log('\u83B7\u53D6\u2018\u5BAB\u5185\u2019\u6570\u636E\u5931\u8D25\uFF0Cbox_obj: ' + box_obj);
+			return;
+		}
+
+		for (var i = 0; i < 9; i++) {
+			/*
+   * 这里如果怕重复取得当前索引
+   * 还有一个方法就是使用map结构来储存索引值
+   * 但为了明白其执行过程，这里我们就使用最原始的判断方法
+    */
+			// 检查行数组
+			// 获取非当前索引且值相等的情况
+			if (row_arr[i] == n && i != col_index) {
+
+				repeatIndex.push({ row: row_index, col: i });
+				// 检查列
+				// 获取非当前索引且值相等的情况
+			} else if (col_arr[i] == n && i != row_index) {
+
+				repeatIndex.push({ row: i, col: col_index });
+			} else if (box_arr[i] == n) {
+				var _boxValueIndex$i = boxValueIndex[i],
+				    _rowIndex = _boxValueIndex$i.rowIndex,
+				    _colIndex = _boxValueIndex$i.colIndex;
+				// 同上，检查当前索引宫内的值
+
+				if (_rowIndex != row_index && _colIndex != col_index) {
+					repeatIndex.push({ row: _rowIndex, col: _colIndex });
+				}
+			}
+		}
+
+		// 若重置索引组不为空，则加入当前索引值
+		if (repeatIndex.length > 0) {
+			repeatIndex.push({ row: row_index, col: col_index });
+		}
+
+		// 返货重复索引组
+		return repeatIndex;
+	},
+
+
+	// 检查数值在九宫内填写合法
+	/* matrix 九宫二维数组
+ ** n 需要填入的数值
+ ** row_index 行索引值
+ ** col_index 列索引值
+ **/
+	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+		// 按行、按列、按宫来检查数据
+		// 抽取行数据
+		var row_arr = matrix[row_index];
+		// 抽取列数据
+		var col_arr = _tool2.default.getCol(matrix, col_index);
+		// 抽取宫数据
+		var box_arr = [];
+		// 对象结构赋值
+		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
+
+		var _tool$convertPosition2 = _tool2.default.convertPosition(row_index, col_index),
+		    rowIndex = _tool$convertPosition2.rowIndex,
+		    colIndex = _tool$convertPosition2.colIndex;
+		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
+
+
+		var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
+		    boxValue = _matrixTool$boxMatrix2.boxValue;
 
 		if (boxValue) {
 			box_arr = boxValue;
@@ -10441,9 +10528,9 @@ var Checker = function () {
 				// boxValueIndex 是一个数组，元素为对象，记录了值对应在二维数组中的索引值
 
 
-				var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
-				    boxValue = _matrixTool$boxMatrix2.boxValue,
-				    boxValueIndex = _matrixTool$boxMatrix2.boxValueIndex;
+				var _matrixTool$boxMatrix3 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
+				    boxValue = _matrixTool$boxMatrix3.boxValue,
+				    boxValueIndex = _matrixTool$boxMatrix3.boxValueIndex;
 				// 标记宫内元素
 
 
@@ -10456,10 +10543,10 @@ var Checker = function () {
 						// 这里再次体现数据结构在程序中的重要性
 						// 这里建立多张相互关联的表，理清各个表（也就是二维数组）之间的关系很重要
 						var _boxValueIndex$j = boxValueIndex[j],
-						    _rowIndex = _boxValueIndex$j.rowIndex,
-						    _colIndex = _boxValueIndex$j.colIndex;
+						    _rowIndex2 = _boxValueIndex$j.rowIndex,
+						    _colIndex2 = _boxValueIndex$j.colIndex;
 
-						this._matrixMarks[_rowIndex][_colIndex] = false;
+						this._matrixMarks[_rowIndex2][_colIndex2] = false;
 					}
 				}
 			}
@@ -10600,6 +10687,7 @@ var InputControl = function () {
 					_this2._target.style.background = 'inherit';
 					_this2.value = '0';
 					_this2.hide();
+					return;
 				} else if (input_data == 'm') {
 					// 点击标记按钮
 					// 如果标记已经存在那么就取消标记
@@ -10613,11 +10701,13 @@ var InputControl = function () {
 					}
 					_this2.value = false;
 					_this2.hide();
-				} else if (input_data) {
+					return;
+				} else {
 					// 点击是数字
 					_this2._target.innerHTML = input_data;
 					_this2.value = input_data;
 					_this2.hide();
+					return;
 				}
 			}, false);
 		}

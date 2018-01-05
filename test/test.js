@@ -339,13 +339,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var checkerTool = {
 
-	// 检查数值在九宫内填写合法
-	/* matrix 九宫二维数组
- ** n 需要填入的数值
- ** row_index 行索引值
- ** col_index 列索引值
- **/
-	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+	// todo 检查重复按钮
+	checkRepeat: function checkRepeat(matrix, row_index, col_index) {
+		// 获取当前索引位置的值
+		var n = matrix[row_index][col_index];
+		// 储存有重复的数据索引
+		var repeatIndex = [];
 		// 按行、按列、按宫来检查数据
 		// 抽取行数据
 		var row_arr = matrix[row_index];
@@ -363,7 +362,79 @@ var checkerTool = {
 
 
 		var _matrixTool$boxMatrix = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
-		    boxValue = _matrixTool$boxMatrix.boxValue;
+		    boxValue = _matrixTool$boxMatrix.boxValue,
+		    boxValueIndex = _matrixTool$boxMatrix.boxValueIndex;
+
+		if (boxValue) {
+			box_arr = boxValue;
+		} else {
+			console.log('\u83B7\u53D6\u2018\u5BAB\u5185\u2019\u6570\u636E\u5931\u8D25\uFF0Cbox_obj: ' + box_obj);
+			return;
+		}
+
+		for (var i = 0; i < 9; i++) {
+			/*
+   * 这里如果怕重复取得当前索引
+   * 还有一个方法就是使用map结构来储存索引值
+   * 但为了明白其执行过程，这里我们就使用最原始的判断方法
+    */
+			// 检查行数组
+			// 获取非当前索引且值相等的情况
+			if (row_arr[i] == n && i != col_index) {
+
+				repeatIndex.push({ row: row_index, col: i });
+				// 检查列
+				// 获取非当前索引且值相等的情况
+			} else if (col_arr[i] == n && i != row_index) {
+
+				repeatIndex.push({ row: i, col: col_index });
+			} else if (box_arr[i] == n) {
+				var _boxValueIndex$i = boxValueIndex[i],
+				    _rowIndex = _boxValueIndex$i.rowIndex,
+				    _colIndex = _boxValueIndex$i.colIndex;
+				// 同上，检查当前索引宫内的值
+
+				if (_rowIndex != row_index && _colIndex != col_index) {
+					repeatIndex.push({ row: _rowIndex, col: _colIndex });
+				}
+			}
+		}
+
+		// 若重置索引组不为空，则加入当前索引值
+		if (repeatIndex.length > 0) {
+			repeatIndex.push({ row: row_index, col: col_index });
+		}
+
+		// 返货重复索引组
+		return repeatIndex;
+	},
+
+
+	// 检查数值在九宫内填写合法
+	/* matrix 九宫二维数组
+ ** n 需要填入的数值
+ ** row_index 行索引值
+ ** col_index 列索引值
+ **/
+	checkFillable: function checkFillable(matrix, n, row_index, col_index) {
+		// 按行、按列、按宫来检查数据
+		// 抽取行数据
+		var row_arr = matrix[row_index];
+		// 抽取列数据
+		var col_arr = _tool2.default.getCol(matrix, col_index);
+		// 抽取宫数据
+		var box_arr = [];
+		// 对象结构赋值
+		// tool.convertPosition 返回的是 {rowIndex: xxx, colIndex: xxxx}
+
+		var _tool$convertPosition2 = _tool2.default.convertPosition(row_index, col_index),
+		    rowIndex = _tool$convertPosition2.rowIndex,
+		    colIndex = _tool$convertPosition2.colIndex;
+		// 这里也是对象结构赋值matrixTool.boxMatrix 返回 {boxValue:xxx, boxValueIndex:xx}
+
+
+		var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(matrix, rowIndex, colIndex),
+		    boxValue = _matrixTool$boxMatrix2.boxValue;
 
 		if (boxValue) {
 			box_arr = boxValue;
@@ -522,9 +593,9 @@ var Checker = function () {
 				// boxValueIndex 是一个数组，元素为对象，记录了值对应在二维数组中的索引值
 
 
-				var _matrixTool$boxMatrix2 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
-				    boxValue = _matrixTool$boxMatrix2.boxValue,
-				    boxValueIndex = _matrixTool$boxMatrix2.boxValueIndex;
+				var _matrixTool$boxMatrix3 = _matrixTool2.default.boxMatrix(this._matrix, rowIndex, colIndex),
+				    boxValue = _matrixTool$boxMatrix3.boxValue,
+				    boxValueIndex = _matrixTool$boxMatrix3.boxValueIndex;
 				// 标记宫内元素
 
 
@@ -537,10 +608,10 @@ var Checker = function () {
 						// 这里再次体现数据结构在程序中的重要性
 						// 这里建立多张相互关联的表，理清各个表（也就是二维数组）之间的关系很重要
 						var _boxValueIndex$j = boxValueIndex[j],
-						    _rowIndex = _boxValueIndex$j.rowIndex,
-						    _colIndex = _boxValueIndex$j.colIndex;
+						    _rowIndex2 = _boxValueIndex$j.rowIndex,
+						    _colIndex2 = _boxValueIndex$j.colIndex;
 
-						this._matrixMarks[_rowIndex][_colIndex] = false;
+						this._matrixMarks[_rowIndex2][_colIndex2] = false;
 					}
 				}
 			}
@@ -596,14 +667,11 @@ var _makeSolution2 = _interopRequireDefault(_makeSolution);
 
 var _checker = __webpack_require__(2);
 
-var _inputButton = __webpack_require__(6);
+var _inputControl = __webpack_require__(6);
 
-var _inputButton2 = _interopRequireDefault(_inputButton);
+var _inputControl2 = _interopRequireDefault(_inputControl);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// 输入元素定位测试
-var target = document.querySelector('.target');
 
 // 工具测试
 
@@ -665,23 +733,33 @@ console.log(checker.matrix);
 console.log(checker2.matrixMarks);
 console.log(checker2.isSuccess);
 */
-
-/*
-import Shuduku from './core/shuduku.js';
-
-const shudu = new Shuduku();
-shudu.makePuzzle();
-console.log(shudu.solutionMatrix);
-console.log(shudu.puzzleMatrix);
-*/
-
 // export default {name: 'test'}
+var maker = new _makeSolution2.default();
+maker.init();
+var matrix_arr = maker.matrix;
+var n = matrix_arr[3][6];
+matrix_arr[8][6] = matrix_arr[3][6];
+var result = _checker.checkerTool.checkRepeat(matrix_arr, 4, 6);
+console.log(result);
 
-var buttons = new _inputButton2.default();
+// import Shuduku from './core/shuduku.js';
 
-target.addEventListener('click', function (e) {
-	buttons.position(this);
-}, false);
+// const shudu = new Shuduku();
+// shudu.makePuzzle();
+// console.log(shudu.solutionMatrix);
+// console.log(shudu.puzzleMatrix);
+// for (let [key,value] of shudu.puzzleMap.entries()) {
+// 	console.log(key,value);
+// }
+
+
+// 输入元素定位测试
+var target = document.querySelector('.target');
+// const buttons = new InputControl();
+
+// target.addEventListener('click', function (e) {
+// 	buttons.position(this);
+// }, false);
 
 /***/ }),
 /* 5 */
@@ -840,58 +918,86 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 // 输入框元素的操作
-var InputButton = function () {
-	function InputButton() {
+// 注意这里我们使用了HTML5新增的API
+// classList 、 dataset
+// 都是新增的DOM操作API
+// 低版本浏览器不支持，如果使用低版本浏览器打开本应用就会出错
+var InputControl = function () {
+	function InputControl() {
 		var event = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "click";
 
-		_classCallCheck(this, InputButton);
+		_classCallCheck(this, InputControl);
 
+		// 保存输入按钮组
 		this._input_ele = document.querySelector('#input-buttons');
+		// 用于储存当前触发目标元素
 		this._target = null;
+		// 用于储存输入按钮组尺寸
+		this._input_ele_size = null;
+		// 保存输入按钮触发事件类型，默认为click
 		this._e = event;
+		// 保存输入值
+		this.value = null;
+		// 输入按钮是否显示
+		this.isOpen = false;
+		// 添加默认事件监听
 		this.eventHandler();
 	}
 
-	_createClass(InputButton, [{
+	_createClass(InputControl, [{
 		key: 'position',
 
 		// 获取输入按钮的定位并显示
 		value: function position(target_ele) {
+			if (this.isOpen) {
+				this._input_ele.classList.remove('in');
+			}
+			// 将输入按钮组diaplay设为block
+			// opacity 依然为0
+			// 这样做的目的是为了执行_getClientSize()
+			// 只有元素display非none时，我们才能获取其尺寸
 			this._input_ele.classList.add('show');
 			// 储存当前目标元素
 			this._target = target_ele;
 			// 获取目标点当前文档高度
 			var _top = target_ele.offsetTop;
-			// console.log(_top);
 			// 获取目标点当前文档左边距
 			var _left = target_ele.offsetLeft;
-			// console.log(_left);
 			// 获取目标点自己的大小（注 意这里目标值就是每个单元格，而每个单元格是等宽等高的）
 			// 所以这里我们仅仅取一个值即可
 			var target_width = target_ele.clientWidth;
 			var target_height = target_ele.clientHeight;
+			// 这里我们需要获取按钮组尺寸大小（按钮组大小是固定）
+			// 这里我们做一个判断，判断当前对象是否保存了输入按钮组大小
+			// 如果没有我们就取值，如果有就不再重复取值
+			if (!this._input_ele_size) {
+				this._input_ele_size = this._getClientSize;
+			}
+			var _ele_size = this._input_ele_size;
 			// console.log(target_width, target_height);
 			// 注意这里需要理解left和top的定位计算方式
 			// 我们需要将输入按钮的中心点与当前目标点的中心重合
 			// 这里建议画图理解这个关系
-			var _ele_size = this._getClientSize;
 			var x = _left - (_ele_size.width - target_width) / 2;
 			var y = _top - (_ele_size.height - target_height) / 2;
 
 			this._input_ele.style.left = x + 'px';
 			this._input_ele.style.top = y + 'px';
+			// console.log(x, y);
 			// 加入动画并显现元素
 			this._input_ele.classList.add('in');
+			this.isOpen = true;
 		}
 	}, {
 		key: 'hide',
 		value: function hide() {
 			var _this = this;
 
+			// 隐藏输入按钮组
 			this._input_ele.classList.remove('in');
 			window.setTimeout(function () {
 				return _this._input_ele.classList.remove('show');
-			}, 300);
+			}, 400);
 		}
 	}, {
 		key: 'eventHandler',
@@ -900,28 +1006,43 @@ var InputButton = function () {
 
 			this._input_ele.addEventListener(this._e, function (e) {
 				var input_button = e.target;
-				console.log(input_button);
+				// console.log(input_button);
 				var input_data = input_button.dataset.value;
-				console.log(input_data);
+				// console.log(input_data);
 				// 点击清空
 				if (input_data == 0) {
 					_this2._target.innerHTML = '';
 					_this2._target.style.background = 'inherit';
+					_this2.value = '0';
 					_this2.hide();
+					return;
 				} else if (input_data == 'm') {
-					_this2._target.style.background = '#ffdd57';
+					// 点击标记按钮
+					// 如果标记已经存在那么就取消标记
+					if (_this2._target.dataset.mark) {
+						_this2._target.style.background = 'inherit';
+						_this2._target.dataset.mark = '';
+					} else {
+						// 如果没有别标记那么添加标记
+						_this2._target.style.background = '#ffdd57';
+						_this2._target.dataset.mark = 'true';
+					}
+					_this2.value = false;
 					_this2.hide();
-				} else if (input_data) {
+					return;
+				} else {
 					// 点击是数字
 					_this2._target.innerHTML = input_data;
+					_this2.value = input_data;
 					_this2.hide();
+					return;
 				}
 			}, false);
 		}
 	}, {
 		key: '_getClientSize',
 		get: function get() {
-			// 第一步需要显示按钮
+			// 获取输入组按钮尺寸
 			return {
 				width: this._input_ele.clientWidth,
 				height: this._input_ele.clientHeight
@@ -929,10 +1050,10 @@ var InputButton = function () {
 		}
 	}]);
 
-	return InputButton;
+	return InputControl;
 }();
 
-exports.default = InputButton;
+exports.default = InputControl;
 
 /***/ })
 /******/ ]);
