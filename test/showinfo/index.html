@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>table-css</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
+	<style>
+		.game-info span{
+			display: block;
+			position: absolute;
+			width: 20rem;
+			height: 5rem;
+			left: 50%;
+			top: 50%;
+			margin: -2.5rem 0 0 -10rem;
+			line-height: 5rem;
+			text-align: center;
+			font-size: 1.8rem;
+			color: #ff3860;
+			text-shadow: 0 0 0.4rem #a91432, 0 0.1rem #9e1631;
+		/*	transform: translateY(10rem);
+			opacity: 0;*/
+			transition: all 2s;
+		}
+		.show-info span {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	</style>
+</head>
+<body>
+	<table>
+		<tr><td class="err-mark">test</td></tr>
+	</table>
+	<section class="game-info">
+		<span>厉害！再重建一局吧</span>
+	</section>
+</body>
+</html>

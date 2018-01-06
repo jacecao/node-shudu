@@ -2,6 +2,8 @@ import {checkerTool} from '../lib/checker.js';
 
 // 通过symbol值来创建静态变量
 const mark_err = Symbol();
+const table_html = Symbol();
+const renderHTML = Symbol();
 
 // 九宫格文档结构渲染
 export default class Render {
@@ -36,7 +38,7 @@ export default class Render {
 	}
 
 	// 创建HTML结构
-	bulidHTML (data) {
+	[table_html] (data) {
 		// 生成一个随机的class
 		const _class = 'shudu-' + Date.now();
 		this.tableClass = '.' + _class;
@@ -88,10 +90,10 @@ export default class Render {
 	}
 
 	// 渲染HTML结构
-	renderHTML (ele, data) {
+	[renderHTML] (ele, data) {
 		const container = document.querySelector(ele);
 		if (container) {
-			const html = this.bulidHTML(data);
+			const html = this[table_html](data);
 			container.innerHTML = html;
 			this.render = true;
 		}else{
@@ -124,7 +126,7 @@ export default class Render {
 	init () {
 		let ele = this.container;
 		let data = this.data;
-		this.renderHTML(ele, data);
+		this[renderHTML](ele, data);
 		// 清空填写数据
 		this.inputMap.clear();
 		this.resize();

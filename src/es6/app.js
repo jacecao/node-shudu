@@ -3,7 +3,7 @@ import Render from "./ui/render.js";
 import Shuduku from './core/shuduku.js';
 
 import InputControl from './ui/InputControl.js';
-import show from './ui/show-info.js';
+import GameInfo from './ui/gameInfo.js';
 
 const data = new Shuduku();
 // 生成迷盘数据
@@ -21,6 +21,21 @@ const view = new Render({
 // 初始化主视图
 view.init();
 view.bind(inputControl);
+
+// 获取答案
+const resolve = document.querySelector('#resolve');
+resolve.addEventListener('click', function () {
+	console.log(data.solutionMatrix);
+}, false);
+
+// 检查棋盘
+const check = document.querySelector('#check');
+const checkAndShow = new GameInfo();
+check.addEventListener('click', function () {
+	let puzzleMap = data.puzzleMap;
+	let inputMap = view.inputMap;
+	checkAndShow.check(puzzleMap, inputMap);
+}, false);
 
 // 重置棋盘
 const reset = document.querySelector('#reset');

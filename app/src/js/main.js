@@ -4633,9 +4633,9 @@ var _InputControl = __webpack_require__(335);
 
 var _InputControl2 = _interopRequireDefault(_InputControl);
 
-var _showInfo = __webpack_require__(336);
+var _gameInfo = __webpack_require__(336);
 
-var _showInfo2 = _interopRequireDefault(_showInfo);
+var _gameInfo2 = _interopRequireDefault(_gameInfo);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4655,6 +4655,21 @@ var view = new _render2.default({
 // 初始化主视图
 view.init();
 view.bind(inputControl);
+
+// 获取答案
+var resolve = document.querySelector('#resolve');
+resolve.addEventListener('click', function () {
+	console.log(data.solutionMatrix);
+}, false);
+
+// 检查棋盘
+var check = document.querySelector('#check');
+var checkAndShow = new _gameInfo2.default();
+check.addEventListener('click', function () {
+	var puzzleMap = data.puzzleMap;
+	var inputMap = view.inputMap;
+	checkAndShow.check(puzzleMap, inputMap);
+}, false);
 
 // 重置棋盘
 var reset = document.querySelector('#reset');
@@ -10301,6 +10316,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // 通过symbol值来创建静态变量
 var mark_err = Symbol();
+var table_html = Symbol();
+var renderHTML = Symbol();
 
 // 九宫格文档结构渲染
 
@@ -10345,8 +10362,8 @@ var Render = function () {
 		// 创建HTML结构
 
 	}, {
-		key: 'bulidHTML',
-		value: function bulidHTML(data) {
+		key: table_html,
+		value: function value(data) {
 			// 生成一个随机的class
 			var _class = 'shudu-' + Date.now();
 			this.tableClass = '.' + _class;
@@ -10396,11 +10413,11 @@ var Render = function () {
 		// 渲染HTML结构
 
 	}, {
-		key: 'renderHTML',
-		value: function renderHTML(ele, data) {
+		key: renderHTML,
+		value: function value(ele, data) {
 			var container = document.querySelector(ele);
 			if (container) {
-				var html = this.bulidHTML(data);
+				var html = this[table_html](data);
 				container.innerHTML = html;
 				this.render = true;
 			} else {
@@ -10439,7 +10456,7 @@ var Render = function () {
 		value: function init() {
 			var ele = this.container;
 			var data = this.data;
-			this.renderHTML(ele, data);
+			this[renderHTML](ele, data);
 			// 清空填写数据
 			this.inputMap.clear();
 			this.resize();
@@ -10960,45 +10977,77 @@ exports.default = InputControl;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.default = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _checker = __webpack_require__(89);
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; } /* 底部按钮控制 */
-/* 该类所有私有属性我们都采用symbol来标记 */
-
-// check reset rebuild
-
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var mark_err = Symbol();
-var gameInfo = Symbol();
-var showInfo = Symbol();
+var message = Symbol();
+var show_info = Symbol();
 
-exports.default = _defineProperty({
-	checkShow: function checkShow(puzzleMap, inputMap) {
-		var errIndex = _checker.checkTool.checkMap(puzzleMap, inputMap);
-		// 如果有填写错误
-		if (errIndex.length > 0) {
-			this[gameInfo] = '抱歉！有错误存在';
-			var len = errIndex.length;
-			// 标记错误给用户
-			for (var i = 0; i < len; i++) {
-				var ele = document.querySelector('.index_' + i);
-				this[mark_err](ele);
-			}
-		} else {
-			this[gameInfo] = '厉害！点重建再来一局吧';
-		}
-		// 显示提示信息
-		this[showInfo]();
+var GameInfo = function () {
+	function GameInfo() {
+		_classCallCheck(this, GameInfo);
+
+		this[message] = 'hello!';
 	}
-}, mark_err, function (ele) {
-	// 这个类名是我们在_err_mark.scss文件中约定的
-	ele.classList.add('err-mark');
-	// 提示完后会自动消失
-	setTimeout(function () {
-		ele.classList.remove('err-mark');
-	}, 2000);
-});
+
+	_createClass(GameInfo, [{
+		key: 'check',
+		value: function check(puzzleMap, inputMap) {
+			var err_index = _checker.checkerTool.checkMap(puzzleMap, inputMap);
+			if (err_index.length > 0) {
+
+				this[message] = '抱歉！有错误哦';
+				var len = err_index.length;
+				for (var i = 0; i < len; i++) {
+					var ele = document.querySelector('.index_' + err_index[i]);
+					this[mark_err](ele);
+				}
+			} else {
+
+				this[message] = '加油！再重建一局吧';
+			}
+
+			this[show_info]();
+		}
+
+		// 执行错误标记
+
+	}, {
+		key: mark_err,
+		value: function value(ele) {
+			// 这个类名是我们在_err_mark.scss文件中约定的
+			ele.classList.add('err-mark');
+			// 提示完后会自动消失
+			setTimeout(function () {
+				ele.classList.remove('err-mark');
+			}, 2000);
+		}
+	}, {
+		key: show_info,
+		value: function value() {
+			var ele = document.querySelector('.game-info');
+			var span = document.querySelector('#message');
+
+			span.innerHTML = this[message];
+
+			ele.classList.add('show-info');
+			// 提示完后会自动消失
+			setTimeout(function () {
+				ele.classList.remove('show-info');
+			}, 2000);
+		}
+	}]);
+
+	return GameInfo;
+}();
+
+exports.default = GameInfo;
 
 /***/ })
 /******/ ]);
