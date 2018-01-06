@@ -8,7 +8,7 @@ export default class InputControl {
 	constructor (event="click") {
 		// 保存输入按钮组
 		this._input_ele = document.querySelector('#input-buttons');
-		// 用于储存当前触发目标元素
+		// 用于储存当前触发输入按钮的目标元素（也就是九宫格格子）
 		this._target = null;
 		// 用于储存输入按钮组尺寸
 		this._input_ele_size = null;
@@ -18,8 +18,6 @@ export default class InputControl {
 		this.value = null;
 		// 输入按钮是否显示
 		this.isOpen = false;
-		// 添加默认事件监听
-		this.eventHandler();
 	}
 
 	get _getClientSize () {
@@ -76,42 +74,66 @@ export default class InputControl {
 		this._input_ele.classList.remove('in');
 		window.setTimeout(() => this._input_ele.classList.remove('show'), 400);
 	}
-
-	eventHandler () {
-		this._input_ele.addEventListener(this._e, (e) => {
-			let input_button = e.target;
-			// console.log(input_button);
-			let input_data = input_button.dataset.value;
-			// console.log(input_data);
-			// 点击清空
-			if (input_data == 0) {
-				this._target.innerHTML = '';
-				this._target.style.background = 'inherit';
-				this.value = '0';
-				this.hide();
-				return;
-			} else if (input_data == 'm') {
-				// 点击标记按钮
-				// 如果标记已经存在那么就取消标记
-				if (this._target.dataset.mark) {
-					this._target.style.background = 'inherit';
-					this._target.dataset.mark = '';
+	// 一个promise对象
+	// 这里我们通过promise对象来返回这里轮盘输入的值
+	// 如果我们直接访问该对象的value属性是无法获取到当前值
+	// 因为只有点击事件发生后才会更新value属性
+	// 而这一步却是一个异步操作，存在实践性
+	// 所以在render模块执行该模块时，无法直接获取轮盘输入值
+	// 这里也能显示出promise这妙处
+	eventPromise () {
+		return new Promise((resolve, reject) => {
+			this._input_ele.addEventListener(this._e, (e) => {
+				// 这里是指点击的数字按钮
+				let input_button = e.target;
+				// console.log(input_button);
+				let input_data = input_button.dataset.value;
+				// console.log(input_data);
+				// 点击清空
+				if (input_data == 0) {
+					this._inputNull();
+					resolve(this.value);
+				} else if (input_data == 'm') {
+					this._inputMark();
+					resolve(this.value);
 				} else {
-					// 如果没有别标记那么添加标记
-					this._target.style.background = '#ffdd57';
-					this._target.dataset.mark = 'true';
+					this._inputNumber(input_data);
+					resolve(this.value);
 				}
-				this.value = false;
-				this.hide();
-				return;
-			} else {
-				// 点击是数字
-				this._target.innerHTML = input_data;
-				this.value = input_data;
-				this.hide();
-				return;
-			}
-		}, false);
+			}, false);
+		});
+	}
+
+	// 点击清空按钮
+	_inputNull () {
+		this._target.innerHTML = '';
+		this._target.style.background = 'inherit';
+		this.value = 0;
+		this.hide();
+	}
+
+	// 点击标记按钮
+	_inputMark () {
+		// 点击标记按钮
+		// 如果标记已经存在那么就取消标记
+		if (this._target.dataset.mark) {
+			this._target.style.background = 'inherit';
+			this._target.dataset.mark = '';
+		} else {
+			// 如果没有别标记那么添加标记
+			this._target.style.background = '#ffdd57';
+			this._target.dataset.mark = 'true';
+		}
+		this.value = false;
+		this.hide();
+	}
+
+
+	// 点击输入按钮操作
+	_inputNumber (data) {
+		this.value = parseInt(data);
+		this._target.innerHTML = data;
+		this.hide();
 	}
 
 }

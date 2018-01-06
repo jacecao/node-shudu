@@ -147,6 +147,28 @@ const checkerTool = {
 
 		return marks;
 
+	},
+
+	/* 检查map数据
+	** 这里主要检查用户填写的数据和迷盘被隐藏的数据是否一样
+	** 用户填写数据在inputControl类中的inputMap获取
+	** 迷盘隐藏数据在shuduku类中的puzzleMap获取
+	** 这两个map的数据结构都是一样的值
+	** index -> value
+	*/
+	checkMap (puzzleMap, inputMap) {
+
+		// 记录填写错误的数据
+		const errIndex = new Array();
+		for (let key of puzzleMap.keys()) {
+
+			if (puzzleMap.get(key) != inputMap.get(key)) {
+				errIndex.push(key);
+			}
+
+		}
+
+		return errIndex;
 	}
 }
 
