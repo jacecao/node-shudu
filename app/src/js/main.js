@@ -4664,10 +4664,14 @@ resolve.addEventListener('click', function () {
 
 // 检查棋盘
 var check = document.querySelector('#check');
+// 检查信息模块
 var checkAndShow = new _gameInfo2.default();
 check.addEventListener('click', function () {
+	// 获取当前棋盘被隐藏为的数据（保存着那些值被转换为0）
 	var puzzleMap = data.puzzleMap;
+	// 获取当前用户填写的值
 	var inputMap = view.inputMap;
+	// 对值进行检查，同时对错误进行标记
 	checkAndShow.check(puzzleMap, inputMap);
 }, false);
 
@@ -10901,13 +10905,19 @@ var InputControl = function () {
 					if (input_data == 0) {
 						_this2._inputNull();
 						resolve(_this2.value);
+						return;
+						// 点击标记按钮
 					} else if (input_data == 'm') {
 						_this2._inputMark();
 						resolve(_this2.value);
-					} else {
-						_this2._inputNumber(input_data);
-						resolve(_this2.value);
+						return;
+						// 点击非数字,直接隐藏输入轮盘
+					} else if (input_data == undefined) {
+						_this2.hide();
+						return;
 					}
+					_this2._inputNumber(input_data);
+					resolve(_this2.value);
 				}, false);
 			});
 		}

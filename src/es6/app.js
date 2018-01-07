@@ -30,10 +30,14 @@ resolve.addEventListener('click', function () {
 
 // 检查棋盘
 const check = document.querySelector('#check');
+// 检查信息模块
 const checkAndShow = new GameInfo();
 check.addEventListener('click', function () {
+	// 获取当前棋盘被隐藏为的数据（保存着那些值被转换为0）
 	let puzzleMap = data.puzzleMap;
+	// 获取当前用户填写的值
 	let inputMap = view.inputMap;
+	// 对值进行检查，同时对错误进行标记
 	checkAndShow.check(puzzleMap, inputMap);
 }, false);
 

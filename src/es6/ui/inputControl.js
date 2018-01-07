@@ -93,13 +93,19 @@ export default class InputControl {
 				if (input_data == 0) {
 					this._inputNull();
 					resolve(this.value);
+					return;
+					// 点击标记按钮
 				} else if (input_data == 'm') {
 					this._inputMark();
 					resolve(this.value);
-				} else {
-					this._inputNumber(input_data);
-					resolve(this.value);
+					return;
+					// 点击非数字,直接隐藏输入轮盘
+				} else if (input_data == undefined) {
+					this.hide();
+					return;
 				}
+				this._inputNumber(input_data);
+				resolve(this.value);
 			}, false);
 		});
 	}
