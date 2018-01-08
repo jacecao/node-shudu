@@ -1,0 +1,265 @@
+@charset "UTF-8";
+/* 请先引入 bulma CSS框架 */
+@import url(https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css);
+* {
+  outline: none; }
+
+html {
+  /* 是因为在chrome浏览器中默认字体最小值为12px 
+	所以这里我们需要使得html默认字体大小为100px
+	(注意这里的比例依然是指浏览器默认初始字体大小为16px)
+	*/
+  font-size: 62.5%;
+  color: #222; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  max-width: 45rem; }
+  body > * {
+    max-width: 45rem; }
+
+/*
+	数字轮盘按钮CSS
+ */
+.input-buttons {
+  display: none;
+  position: absolute;
+  transform: translate3d(0, 0, 0);
+  transition: 0.2s;
+  opacity: 0; }
+
+.show {
+  display: block; }
+
+.in {
+  opacity: 1; }
+
+.main-button {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  line-height: 3.8rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 2px 2px #e1e4dc;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #99b977;
+  transition: 0.24s 0.2s; }
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: -4rem;
+  left: -4rem;
+  border: 6rem solid transparent;
+  border-radius: 50%;
+  z-index: -1;
+  cursor: pointer;
+  transform: scale(0);
+  transition: transform 1.4s 0.07s; }
+
+.menu li {
+  position: absolute;
+  top: -4rem;
+  left: -4rem;
+  transform-origin: 4rem 4rem;
+  transition: all 0.5s 0.1s; }
+
+.in .menu {
+  transition: transform 0.4s 0.08s , z-index 0s 0.5s;
+  transform: scale(1);
+  /*z-index: 1;*/ }
+
+.in .menu li {
+  transition: all 0.6s; }
+
+.in .menu li a {
+  /* 注意这里给a元素添加浮动后，间接的设定display为block*/
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  line-height: 2rem;
+  background: #494A5F;
+  color: #D5D6E2;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  transition: 0.6s;
+  box-shadow: 0 0 2px 2px #e1e4dc; }
+
+.in .menu li:nth-child(1) {
+  transition-delay: 0.02s;
+  transform: rotate(36deg); }
+
+.in .menu li:nth-child(1) a {
+  transition-delay: 0.04s;
+  transform: rotate(-36deg); }
+
+.in .menu li:nth-child(2) {
+  transition-delay: 0.04s;
+  transform: rotate(72deg); }
+
+.in .menu li:nth-child(2) a {
+  transition-delay: 0.08s;
+  transform: rotate(-72deg); }
+
+.in .menu li:nth-child(3) {
+  transition-delay: 0.06s;
+  transform: rotate(108deg); }
+
+.in .menu li:nth-child(3) a {
+  transition-delay: 0.12s;
+  transform: rotate(-108deg); }
+
+.in .menu li:nth-child(4) {
+  transition-delay: 0.08s;
+  transform: rotate(144deg); }
+
+.in .menu li:nth-child(4) a {
+  transition-delay: 0.16s;
+  transform: rotate(-144deg); }
+
+.in .menu li:nth-child(5) {
+  transition-delay: 0.1s;
+  transform: rotate(180deg); }
+
+.in .menu li:nth-child(5) a {
+  transition-delay: 0.2s;
+  transform: rotate(-180deg); }
+
+.in .menu li:nth-child(6) {
+  transition-delay: 0.12s;
+  transform: rotate(216deg); }
+
+.in .menu li:nth-child(6) a {
+  transition-delay: 0.24s;
+  transform: rotate(-216deg); }
+
+.in .menu li:nth-child(7) {
+  transition-delay: 0.14s;
+  transform: rotate(252deg); }
+
+.in .menu li:nth-child(7) a {
+  transition-delay: 0.28s;
+  transform: rotate(-252deg); }
+
+.in .menu li:nth-child(8) {
+  transition-delay: 0.16s;
+  transform: rotate(288deg); }
+
+.in .menu li:nth-child(8) a {
+  transition-delay: 0.32s;
+  transform: rotate(-288deg); }
+
+.in .menu li:nth-child(9) {
+  transition-delay: 0.18s;
+  transform: rotate(324deg); }
+
+.in .menu li:nth-child(9) a {
+  transition-delay: 0.36s;
+  transform: rotate(-324deg); }
+
+.in .menu li:nth-child(10) {
+  transition-delay: 0.2s; }
+
+.in .menu li:nth-child(10) a {
+  transition-delay: 0.4s; }
+
+/*
+**  填写错误检查标记
+**  标记class为 err-mark
+ */
+.err-mark::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #d100ba;
+  border-radius: 100%;
+  animation: scaleout 1.0s infinite ease-in-out; }
+
+@keyframes scaleout {
+  0% {
+    transform: scale(0); }
+  100% {
+    transform: scale(1);
+    opacity: 0; } }
+
+.game-info span {
+  display: none;
+  position: absolute;
+  width: 20rem;
+  height: 5rem;
+  left: 50%;
+  top: 50%;
+  margin: -2.5rem 0 0 -10rem;
+  line-height: 5rem;
+  text-align: center;
+  font-size: 1.8rem;
+  color: #ff3860;
+  text-shadow: 0 0 0.4rem #a91432, 0 0.1rem #9e1631;
+  transform: translateY(10rem);
+  opacity: 0;
+  transition: all 1s; }
+
+.show-info span {
+  display: block;
+  opacity: 1;
+  transform: translateY(0); }
+
+h1.title {
+  padding: 1rem;
+  background-color: #00d1b2;
+  color: #fff; }
+
+.container {
+  width: 80%;
+  margin: 2rem auto;
+  box-shadow: 0 0 0.5rem rgba(22, 22, 22, 0.4); }
+  .container .table {
+    margin-bottom: 0; }
+  .container .table td, .container .table th {
+    vertical-align: middle; }
+  .container td {
+    position: relative;
+    text-align: center; }
+  .container td.border-right {
+    border-right-width: 0.2rem;
+    border-right-color: #01d1d1; }
+  .container tr.border-bottom {
+    border-bottom-style: solid;
+    border-bottom-width: 0.2rem;
+    border-bottom-color: #01d1d1; }
+  .container .puzzle-cel {
+    color: #ff3860;
+    font-weight: bold;
+    text-shadow: 0 0 0.2rem #483490; }
+
+.dashboard {
+  width: 100%; }
+  .dashboard .buttons {
+    justify-content: center;
+    margin: 0; }
+    .dashboard .buttons .button {
+      width: 20%;
+      height: 3rem;
+      margin-bottom: 0; }
+  .dashboard .web-info {
+    display: inline-block;
+    width: 100%;
+    line-height: 3rem;
+    text-align: center;
+    color: #ddd; }

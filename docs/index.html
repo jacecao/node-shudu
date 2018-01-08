@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+	<title>数独游戏</title>
+	<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+	<header>
+		<h1 class="title">数独游戏</h1>
+	</header>
+
+	<div class="container">
+		<section id="container"></section>
+		<section id="input-buttons" class="input-buttons">
+			<button data-value="0" class="main-button">clear
+				<ul class="menu">
+					<li><a href="javascript:;" data-value="1">1</a></li>
+					<li><a href="javascript:;" data-value="2">2</a></li>
+					<li><a href="javascript:;" data-value="3">3</a></li>
+					<li><a href="javascript:;" data-value="4">4</a></li>
+					<li><a href="javascript:;" data-value="5">5</a></li>
+					<li><a href="javascript:;" data-value="6">6</a></li>
+					<li><a href="javascript:;" data-value="7">7</a></li>
+					<li><a href="javascript:;" data-value="8">8</a></li>
+					<li><a href="javascript:;" data-value="9">9</a></li>
+					<li><a href="javascript:;" data-value="m">M</a></li>
+				</ul>
+			</button>
+		</section>
+		<section class="game-info">
+			<span id="message"></span>
+		</section>
+	</div>
+
+	<footer id="dashboard" class="dashboard">
+			<div class="buttons">
+				<button type="button" class="button is-primary" id="check" title="检查是否正确">检查</button>
+				<button type="button" class="button is-primary" id="reset" title="回到初始状态">重置</button>
+				<button type="button" class="button is-primary" id="resolve" title="将答案显示在控制台">求答案</button>
+				<button type="button" class="button is-primary" id="rebuild" title="开启新的一局">重开一局</button>
+			</div>
+			<span class="web-info">CSS by BULMA</span>
+	</footer>
+
+	<script src="js/main.js"></script>
+</body>
+</html>
