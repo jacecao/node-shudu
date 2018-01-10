@@ -73,6 +73,11 @@
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+/* 
+**  数独核心基础模块
+*  
+*   主要用于生成各种数组
+ */
 // 9 * 9 二维基础数组生成 和 费雪耶兹排序随机排序
 // 该模块返回的都是数组
 exports.default = {
@@ -169,6 +174,14 @@ exports.default = {
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+/*
+** 数独游戏 核心基础模块
+** 
+**  针对九宫格，获取宫、行、列、数据
+*
+*   shuffle 也是本游戏最核心的排序方法
+ */
+
 // 辅助数据检查工具
 exports.default = {
 	// 九宫格坐标换算
@@ -340,6 +353,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var checkerTool = {
 
 	// todo 检查重复按钮
+	// 注意这里只是检查当前你填的这个数字是否合理
 	checkRepeat: function checkRepeat(matrix, row_index, col_index) {
 		// 获取当前索引位置的值
 		var n = matrix[row_index][col_index];
@@ -494,6 +508,49 @@ var checkerTool = {
 		}
 
 		return marks;
+	},
+
+
+	/* 检查map数据
+ ** 这里主要检查用户填写的数据和迷盘被隐藏的数据是否一样
+ ** 用户填写数据在inputControl类中的inputMap获取
+ ** 迷盘隐藏数据在shuduku类中的puzzleMap获取
+ ** 这两个map的数据结构都是一样的值
+ ** index -> value
+ */
+	checkMap: function checkMap(puzzleMap, inputMap) {
+
+		// 记录填写错误的数据
+		var errIndex = new Array();
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+			for (var _iterator = puzzleMap.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var key = _step.value;
+
+
+				if (puzzleMap.get(key) != inputMap.get(key)) {
+					errIndex.push(key);
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator.return) {
+					_iterator.return();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+
+		return errIndex;
 	}
 };
 
@@ -930,7 +987,7 @@ var InputControl = function () {
 
 		// 保存输入按钮组
 		this._input_ele = document.querySelector('#input-buttons');
-		// 用于储存当前触发目标元素
+		// 用于储存当前触发输入按钮的目标元素（也就是九宫格格子）
 		this._target = null;
 		// 用于储存输入按钮组尺寸
 		this._input_ele_size = null;
@@ -940,8 +997,6 @@ var InputControl = function () {
 		this.value = null;
 		// 输入按钮是否显示
 		this.isOpen = false;
-		// 添加默认事件监听
-		this.eventHandler();
 	}
 
 	_createClass(InputControl, [{
@@ -999,45 +1054,85 @@ var InputControl = function () {
 				return _this._input_ele.classList.remove('show');
 			}, 400);
 		}
+		// 一个promise对象
+		// 这里我们通过promise对象来返回这里轮盘输入的值
+		// 如果我们直接访问该对象的value属性是无法获取到当前值
+		// 因为只有点击事件发生后才会更新value属性
+		// 而这一步却是一个异步操作，存在实践性
+		// 所以在render模块执行该模块时，无法直接获取轮盘输入值
+		// 这里也能显示出promise这妙处
+
 	}, {
-		key: 'eventHandler',
-		value: function eventHandler() {
+		key: 'eventPromise',
+		value: function eventPromise() {
 			var _this2 = this;
 
-			this._input_ele.addEventListener(this._e, function (e) {
-				var input_button = e.target;
-				// console.log(input_button);
-				var input_data = input_button.dataset.value;
-				// console.log(input_data);
-				// 点击清空
-				if (input_data == 0) {
-					_this2._target.innerHTML = '';
-					_this2._target.style.background = 'inherit';
-					_this2.value = '0';
-					_this2.hide();
-					return;
-				} else if (input_data == 'm') {
-					// 点击标记按钮
-					// 如果标记已经存在那么就取消标记
-					if (_this2._target.dataset.mark) {
-						_this2._target.style.background = 'inherit';
-						_this2._target.dataset.mark = '';
-					} else {
-						// 如果没有别标记那么添加标记
-						_this2._target.style.background = '#ffdd57';
-						_this2._target.dataset.mark = 'true';
+			return new Promise(function (resolve, reject) {
+				_this2._input_ele.addEventListener(_this2._e, function (e) {
+					// 这里是指点击的数字按钮
+					var input_button = e.target;
+					// console.log(input_button);
+					var input_data = input_button.dataset.value;
+					// console.log(input_data);
+					// 点击清空
+					if (input_data == 0) {
+						_this2._inputNull();
+						resolve(_this2.value);
+						return;
+						// 点击标记按钮
+					} else if (input_data == 'm') {
+						_this2._inputMark();
+						resolve(_this2.value);
+						return;
+						// 点击非数字,直接隐藏输入轮盘
+					} else if (input_data == undefined) {
+						_this2.hide();
+						return;
 					}
-					_this2.value = false;
-					_this2.hide();
-					return;
-				} else {
-					// 点击是数字
-					_this2._target.innerHTML = input_data;
-					_this2.value = input_data;
-					_this2.hide();
-					return;
-				}
-			}, false);
+					_this2._inputNumber(input_data);
+					resolve(_this2.value);
+				}, false);
+			});
+		}
+
+		// 点击清空按钮
+
+	}, {
+		key: '_inputNull',
+		value: function _inputNull() {
+			this._target.innerHTML = '';
+			this._target.style.background = 'inherit';
+			this.value = 0;
+			this.hide();
+		}
+
+		// 点击标记按钮
+
+	}, {
+		key: '_inputMark',
+		value: function _inputMark() {
+			// 点击标记按钮
+			// 如果标记已经存在那么就取消标记
+			if (this._target.dataset.mark) {
+				this._target.style.background = 'inherit';
+				this._target.dataset.mark = '';
+			} else {
+				// 如果没有别标记那么添加标记
+				this._target.style.background = '#ffdd57';
+				this._target.dataset.mark = 'true';
+			}
+			this.value = false;
+			this.hide();
+		}
+
+		// 点击输入按钮操作
+
+	}, {
+		key: '_inputNumber',
+		value: function _inputNumber(data) {
+			this.value = parseInt(data);
+			this._target.innerHTML = data;
+			this.hide();
 		}
 	}, {
 		key: '_getClientSize',

@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>table-css</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
-	<link rel="stylesheet" href="../main.css">
+	<link rel="stylesheet" href="../css/main_bug.css">
 	<style>
 		/*
 		.err-mark::before, .err-mark::after {
@@ -94,6 +94,7 @@
 	<div class="load"></div>
 	<script>
 		var td = document.querySelector('.test');
+		td.style.height = '40px';
 		td.addEventListener('click', function () {
 			this.classList.toggle('err-mark');
 		}, false);

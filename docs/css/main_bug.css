@@ -186,7 +186,7 @@ body {
   content: '';
   display: block;
   width: 100%;
-  height: inherit;
+  height: 100%;
   background: #d100ba;
   border-radius: 100%;
   animation: scaleout 1.0s infinite ease-in-out; }
