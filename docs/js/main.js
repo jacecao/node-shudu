@@ -4702,6 +4702,14 @@ rebuild.addEventListener('click', function () {
 	view.bind(inputControl);
 }, false);
 
+// 点击其他元素都首先隐藏输入盘
+document.addEventListener('click', function (e) {
+	if (!e.target.classList.contains('puzzle-cel')) {
+		inputControl.hide();
+	}
+	return;
+}, false);
+
 // 窗口重置监听
 window.addEventListener('resize', function () {
 	// 执行视图尺寸重置，保证为一个正方形结构
