@@ -10498,16 +10498,19 @@ var Render = function () {
 						inputControl.eventPromise().then(function (value) {
 							// 创建map数据
 							// 首先判断当前value
-							// 如果当前valueweifalse
-							if (!value) {
+							// 如果当前value为false
+							console.log(value);
+							if (value != 0 && !value) {
 								return;
 							}
 							// 添加输入组的map值
 							_this.inputMap.set('' + row + col, value);
 							// 更新棋盘数据
 							_this.data[row][col] = value;
-							// todo 检查填写数据，对重复数据标记
-							_this.markRepeat(row, col);
+							// 检查填写数据，对重复数据标记
+							if (value) {
+								_this.markRepeat(row, col);
+							}
 						});
 					}
 				}, false);
@@ -10916,8 +10919,9 @@ var InputControl = function () {
 						return;
 						// 点击标记按钮
 					} else if (input_data == 'm') {
+						console.log('mark');
 						_this2._inputMark();
-						resolve(_this2.value);
+						resolve(false);
 						return;
 						// 点击非数字,直接隐藏输入轮盘
 					} else if (input_data == undefined) {
@@ -10936,9 +10940,11 @@ var InputControl = function () {
 		key: '_inputNull',
 		value: function _inputNull() {
 			this._target.innerHTML = '';
-			this._target.style.background = 'inherit';
+			// 如果不存在标记
+			if (!this._target.dataset.mark) {
+				this._target.style.background = 'inherit';
+			}
 			this.value = 0;
-			this.hide();
 		}
 
 		// 点击标记按钮
@@ -10956,7 +10962,6 @@ var InputControl = function () {
 				this._target.style.background = '#ffdd57';
 				this._target.dataset.mark = 'true';
 			}
-			this.value = false;
 			this.hide();
 		}
 

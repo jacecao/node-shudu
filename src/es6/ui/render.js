@@ -151,16 +151,19 @@ export default class Render {
 					inputControl.eventPromise().then((value) => {
 						// 创建map数据
 						// 首先判断当前value
-						// 如果当前valueweifalse
-						if (!value) {
+						// 如果当前value为false
+						console.log(value);
+						if (value != 0 && !value) {
 							return;
 						}
 						// 添加输入组的map值
 						this.inputMap.set(`${row}${col}`, value);
 						// 更新棋盘数据
 						this.data[row][col] = value;
-						// todo 检查填写数据，对重复数据标记
-						this.markRepeat(row, col);
+						// 检查填写数据，对重复数据标记
+						if (value) {
+							this.markRepeat(row, col);
+						}
 					});
 					
 				}
